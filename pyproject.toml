@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "json-pretty-diff"
+version = "0.1.0"
+description = "HTML-only diff generator for top-level JSON objects"
+authors = [{ name = "JSON Pretty Diff" }]
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.scripts]
+jpd = "jpd.infrastructure.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
