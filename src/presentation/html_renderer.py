@@ -187,12 +187,18 @@ def _render_full_json_section(diff: DiffResult) -> str:
 
 
 def _render_truncated_details(
-    old_full: Optional[str], new_full: Optional[str]
+    old_full: Optional[str], new_full: Optional[str], status: str
 ) -> str:
     """Creates the expandable panel with the full payload when truncated."""
 
-    if old_full is None and new_full is None:
+    if old_full is None and new_full is None and status != "removed":
         return ""
+
+    status_classes = {
+        "added": "truncated-new truncated-new--added",
+        "changed": "truncated-new truncated-new--changed",
+        "removed": "truncated-new truncated-new--removed",
+    }
 
     columns: List[str] = []
     if old_full is not None:
@@ -207,13 +213,25 @@ def _render_truncated_details(
             )
         )
 
+    new_column_class = status_classes.get(status, "truncated-new")
     if new_full is not None:
         columns.append(
             "".join(
                 [
-                    '<div class="truncated-column">',
+                    f'<div class="truncated-column {new_column_class}">',
                     '<h4 class="truncated-title">New value</h4>',
                     f'<pre>{html.escape(new_full)}</pre>',
+                    "</div>",
+                ]
+            )
+        )
+    elif status == "removed":
+        columns.append(
+            "".join(
+                [
+                    f'<div class="truncated-column {new_column_class}">',
+                    '<h4 class="truncated-title">New value</h4>',
+                    '<pre>No new value (entry removed).</pre>',
                     "</div>",
                 ]
             )
@@ -258,6 +276,7 @@ def _render_diff_section(entry: Dict[str, Any]) -> str:
         truncated_panel = _render_truncated_details(
             old_full if truncated_old else None,
             new_full if truncated_new else None,
+            status,
         )
 
     section_parts = [
@@ -480,7 +499,11 @@ def render_html(diff: DiffResult) -> str:
         .truncated-wrapper { margin-top: 0.75rem; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
         .truncated-column { border: 1px solid #cbd5f5; border-radius: 12px; background: #f8fafc; padding: 0.75rem; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5); }
         .truncated-title { margin: 0 0 0.5rem; font-size: 0.95rem; color: #0f172a; }
-        .truncated-column pre { margin: 0; font-family: "Fira Code", "Courier New", monospace; white-space: pre-wrap; word-break: break-word; color: #0f172a; }
+        .truncated-column.truncated-new { color: #0f172a; }
+        .truncated-column.truncated-new--added { background: #dcfce7; border-color: #22c55e; color: #14532d; }
+        .truncated-column.truncated-new--changed { background: #ffedd5; border-color: #f97316; color: #9a3412; }
+        .truncated-column.truncated-new--removed { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+        .truncated-column pre { margin: 0; font-family: "Fira Code", "Courier New", monospace; white-space: pre-wrap; word-break: break-word; color: inherit; }
         .full-json-section { border: 1px solid #cbd5f5; border-radius: 16px; padding: 1.5rem; background: #ffffff; box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12); }
         .full-json-details summary { color: #1e293b; }
         .full-json-details summary:focus { outline: none; }
