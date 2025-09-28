@@ -27,7 +27,11 @@ def render_html(diff: DiffResult) -> str:
         section.removed { border-color: #c62828; background: #ffebee; }
         section.changed { border-color: #f9a825; background: #fffde7; }
         footer { font-weight: bold; }
-        code { font-family: "Fira Code", "Courier New", monospace; }
+        code {
+            font-family: "Fira Code", "Courier New", monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
     </style>
     """.strip()
 
@@ -36,6 +40,7 @@ def render_html(diff: DiffResult) -> str:
         "<html lang=\"en\">",
         "<head>",
         "<meta charset=\"utf-8\" />",
+        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />",
         "<title>JSON Pretty Diff</title>",
         styles,
         "</head>",

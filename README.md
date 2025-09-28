@@ -1,4 +1,4 @@
-# JSON Pretty Diff
+# json-pretty-diff
 
 ## Objetivo
 Generar un informe HTML claro que resuma las diferencias de nivel superior entre dos archivos JSON. El reporte organiza las claves en tres grupos (Added, Removed, Changed) y ofrece un vistazo rápido al impacto de los cambios.
