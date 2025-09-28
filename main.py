@@ -6,16 +6,17 @@ import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 SRC_PATH = PROJECT_ROOT / "src"
+PACKAGE_ROOT = SRC_PATH / "jpd"
 
 if str(SRC_PATH) not in sys.path:
     sys.path.insert(0, str(SRC_PATH))
 
 if "jpd" not in sys.modules:
-    spec = util.spec_from_file_location("jpd", SRC_PATH / "__init__.py")
+    spec = util.spec_from_file_location("jpd", PACKAGE_ROOT / "__init__.py")
     if spec and spec.loader:
         module = util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        module.__path__ = [str(SRC_PATH)]
+        module.__path__ = [str(PACKAGE_ROOT)]
         sys.modules["jpd"] = module
 
 from jpd.infrastructure.cli import JsonPrettyDiffCLI
