@@ -1,7 +1,7 @@
 """HTML rendering utilities for JSON Pretty Diff."""
 import html
 import json
-from difflib import unified_diff
+from difflib import SequenceMatcher, unified_diff
 from typing import Any, Dict, Iterable, List, Tuple
 
 from domain.models import DiffResult
@@ -95,6 +95,98 @@ def _render_diff_lines(lines: Iterable[str], truncated: bool) -> str:
         rendered.append('<span class="ctx">… (truncado)</span>')
 
     return "\n".join(rendered)
+
+
+def _serialize_full_json(data: Any) -> str:
+    """Serializes the full JSON payload preserving readability."""
+
+    try:
+        return json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False)
+    except (TypeError, ValueError):
+        return repr(data)
+
+
+def _build_side_by_side_rows(old_lines: List[str], new_lines: List[str]) -> str:
+    """Creates table rows highlighting line level differences."""
+
+    matcher = SequenceMatcher(None, old_lines, new_lines)
+    rows: List[str] = []
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        old_chunk = old_lines[i1:i2]
+        new_chunk = new_lines[j1:j2]
+        limit = max(len(old_chunk), len(new_chunk)) or 1
+
+        for index in range(limit):
+            old_line = old_chunk[index] if index < len(old_chunk) else ""
+            new_line = new_chunk[index] if index < len(new_chunk) else ""
+
+            if tag == "equal":
+                old_class = new_class = "ctx"
+            elif tag == "replace":
+                old_class = "del"
+                new_class = "mix"
+            elif tag == "delete":
+                old_class = "del"
+                new_class = "empty"
+            elif tag == "insert":
+                old_class = "empty"
+                new_class = "mix"
+            else:
+                old_class = new_class = "ctx"
+
+            old_cell = html.escape(old_line) if old_line else "&nbsp;"
+            new_cell = html.escape(new_line) if new_line else "&nbsp;"
+
+            rows.append(
+                "".join(
+                    [
+                        "<tr>",
+                        f'<td class="code-cell {old_class}"><pre>{old_cell}</pre></td>',
+                        f'<td class="code-cell {new_class}"><pre>{new_cell}</pre></td>',
+                        "</tr>",
+                    ]
+                )
+            )
+
+    return "\n".join(rows)
+
+
+def _render_full_json_section(diff: DiffResult) -> str:
+    """Renders the expandable section with the complete JSON snapshots."""
+
+    if not diff.source_snapshot and not diff.target_snapshot:
+        return ""
+
+    old_serialized = _serialize_full_json(diff.source_snapshot)
+    new_serialized = _serialize_full_json(diff.target_snapshot)
+
+    old_lines = old_serialized.splitlines()
+    new_lines = new_serialized.splitlines()
+    table_rows = _build_side_by_side_rows(old_lines, new_lines)
+
+    return "\n".join(
+        [
+            '<section class="full-json-section">',
+            '<details class="full-json-details">',
+            '<summary>See full JSON pretty print</summary>',
+            '<div class="full-json-wrapper">',
+            '<table class="full-json-table">',
+            "<thead>",
+            "<tr>",
+            "<th>Old JSON pretty print</th>",
+            "<th>New JSON pretty print</th>",
+            "</tr>",
+            "</thead>",
+            "<tbody>",
+            table_rows,
+            "</tbody>",
+            "</table>",
+            "</div>",
+            "</details>",
+            "</section>",
+        ]
+    )
 
 
 def _render_diff_section(entry: Dict[str, Any]) -> str:
@@ -220,6 +312,19 @@ def render_html(diff: DiffResult) -> str:
         .change-link:hover code { color: inherit; }
         .gitdiff-container a { color: inherit; text-decoration: none; }
         .gitdiff-container a:hover { color: inherit; text-decoration: none; }
+        .full-json-section { border: 1px solid #cbd5f5; border-radius: 16px; padding: 1.5rem; background: #ffffff; box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12); }
+        .full-json-details summary { font-weight: 600; cursor: pointer; color: #1e293b; }
+        .full-json-details summary:focus { outline: none; }
+        .full-json-wrapper { margin-top: 1rem; overflow-x: auto; }
+        .full-json-table { width: 100%; border-collapse: collapse; }
+        .full-json-table th { text-align: left; padding: 0.75rem; background: #e2e8f0; color: #0f172a; }
+        .full-json-table td { padding: 0; vertical-align: top; }
+        .full-json-table td pre { margin: 0; padding: 0.5rem 0.75rem; font-family: "Fira Code", "Courier New", monospace; white-space: pre; background: transparent; color: inherit; }
+        .full-json-table .code-cell { border-top: 1px solid #e2e8f0; background: #f8fafc; }
+        .full-json-table .code-cell.ctx { color: #0f172a; }
+        .full-json-table .code-cell.del { background: #fee2e2; color: #991b1b; }
+        .full-json-table .code-cell.mix { background: #ffe4e6; color: #be123c; }
+        .full-json-table .code-cell.empty { color: #cbd5f5; }
     </style>
     """.strip()
 
@@ -298,6 +403,10 @@ def render_html(diff: DiffResult) -> str:
     git_sections = _render_git_sections(git_entries)
     if git_sections:
         html_parts.append(git_sections)
+
+    full_json_section = _render_full_json_section(diff)
+    if full_json_section:
+        html_parts.append(full_json_section)
 
     html_parts.append("</body>")
     html_parts.append("</html>")

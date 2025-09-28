@@ -12,6 +12,8 @@ class DiffResult:
     changed: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     added_values: Dict[str, Any] = field(default_factory=dict)
     removed_values: Dict[str, Any] = field(default_factory=dict)
+    source_snapshot: Dict[str, Any] = field(default_factory=dict)
+    target_snapshot: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def has_differences(self) -> bool:
