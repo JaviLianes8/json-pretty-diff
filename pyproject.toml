@@ -17,7 +17,10 @@ classifiers = [
 dependencies = []
 
 [project.scripts]
-jpd = "jpd.infrastructure.cli:main"
+jpd = "main:main"
+
+[tool.setuptools]
+py-modules = ["main"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
