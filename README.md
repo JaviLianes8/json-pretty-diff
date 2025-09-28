@@ -1,33 +1,33 @@
 # json-pretty-diff
 
-## Objetivo
-Generar un informe HTML claro que resuma las diferencias de nivel superior entre dos archivos JSON. El reporte organiza las claves en tres grupos (Added, Removed, Changed) y ofrece un vistazo rápido al impacto de los cambios.
+## Purpose
+Generate a clean HTML report that summarizes the top-level differences between two JSON files. The report groups keys into Added, Removed, and Changed sections to make the impact of the updates easy to scan.
 
-## Instalación local
-1. Clonar este repositorio.
-2. Instalar el paquete en modo editable:
+## Local installation
+1. Clone this repository.
+2. Install the package in editable mode:
    ```bash
    pip install -e .
    ```
 
-## Uso
-Ejecutar el comando principal indicando los archivos a comparar:
+## Usage
+Run the command-line tool and point it to the files you want to compare:
 ```bash
 jpd A.json B.json -o diff.html
 ```
-- Si se omite `-o`, el HTML se envía a `stdout` y puede redirigirse con `>`.
-- Código de salida `0`: no se detectaron diferencias (se genera HTML con "No differences").
-- Código de salida `1`: se detectaron diferencias y el HTML refleja los cambios.
-- Código de salida `2`: ocurrió un error (archivo inexistente, JSON inválido o raíz que no es objeto) y no se genera HTML.
+- When `-o` is omitted, the HTML is printed to `stdout` and can be redirected with `>`.
+- Exit code `0`: no differences were detected (an HTML report is still generated showing "No differences").
+- Exit code `1`: differences were found and the HTML describes every change.
+- Exit code `2`: an error occurred (missing file, invalid JSON, or a root element that is not a JSON object) and no HTML report is produced.
 
-## Ejemplo
+## Example
 ```bash
 jpd fixtures/base.json fixtures/update.json -o reports/diff.html
 ```
-El archivo `diff.html` contendrá una sección por cada tipo de cambio, con estilos sencillos para resaltar claves agregadas, eliminadas o modificadas.
+The file `diff.html` will contain one section per change category with simple styles that highlight added, removed, or modified keys.
 
-## Límites
-- Solo se comparan las claves del primer nivel (sin recursión).
-- No existen exclusiones, tolerancias ni configuraciones avanzadas.
-- No se generan salidas con colores ANSI en consola.
-- No hay integración con CI/CD ni suite de tests incluida.
+## Limitations
+- Only the first-level keys are compared (no recursive diff).
+- There are no exclusions, tolerances, or advanced configuration flags.
+- Console output never uses ANSI colors.
+- There is no CI/CD integration or bundled automated test suite.

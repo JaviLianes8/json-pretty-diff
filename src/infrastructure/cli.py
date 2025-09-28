@@ -36,7 +36,14 @@ class JsonPrettyDiffCLI:
         self._use_case = DiffUseCase()
 
     def run(self, argv: Sequence[str] | None = None) -> int:
-        """Executes the CLI with the provided arguments."""
+        """Executes the CLI with the provided arguments.
+
+        Returns
+        -------
+        int
+            Exit status code: ``0`` when no differences are detected, ``1`` when
+            changes exist, and ``2`` when a recoverable error is reported.
+        """
 
         args = self._parser.parse_args(argv)
         source = self._load_json(Path(args.source))
@@ -60,14 +67,14 @@ class JsonPrettyDiffCLI:
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except FileNotFoundError as error:
-            self._emit_error(f"Archivo no encontrado: {path}")
+            self._emit_error(f"File not found: {path}")
             raise SystemExit(2) from error
         except json.JSONDecodeError as error:
-            self._emit_error(f"JSON inválido en {path}: {error.msg}")
+            self._emit_error(f"Invalid JSON in {path}: {error.msg}")
             raise SystemExit(2) from error
 
         if not isinstance(data, dict):
-            self._emit_error(f"La raíz del archivo {path} debe ser un objeto JSON.")
+            self._emit_error(f"The root element of {path} must be a JSON object.")
             raise SystemExit(2)
 
         return data

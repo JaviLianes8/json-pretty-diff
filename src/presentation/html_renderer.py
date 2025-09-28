@@ -94,7 +94,7 @@ def _render_diff_lines(lines: Iterable[str], truncated: bool) -> str:
         rendered.append(f'<span class="{css_class}">{escaped}</span>')
 
     if truncated:
-        rendered.append('<span class="ctx">… (truncado)</span>')
+        rendered.append('<span class="ctx">… (truncated)</span>')
 
     return "\n".join(rendered)
 
