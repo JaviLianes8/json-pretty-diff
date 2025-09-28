@@ -8,6 +8,7 @@ from domain.models import DiffResult
 
 
 _MISSING = object()
+FULL_JSON_TABLE_ID = "full-json-table"
 
 
 def _format_value(value: Any) -> str:
@@ -162,13 +163,26 @@ def _render_full_json_section(diff: DiffResult) -> str:
     new_lines = new_serialized.splitlines()
     table_rows = _build_side_by_side_rows(old_lines, new_lines)
 
+    table_id = FULL_JSON_TABLE_ID
+
     return "\n".join(
         [
-            '<section class="full-json-section">',
+            '<section class="full-json-section page-section">',
             '<details class="panel-toggle full-json-details" open>',
             '<summary>FULL JSON</summary>',
             '<div class="full-json-wrapper">',
-            '<table class="full-json-table">',
+            '<div class="full-json-filter">',
+            '<label for="full-json-filter" class="full-json-filter__label">Filter</label>',
+            (
+                '<input id="full-json-filter" '
+                'class="full-json-filter__input" '
+                'type="search" '
+                'placeholder="Type to filter..." '
+                'data-json-filter="true" '
+                f'data-json-target="{table_id}" />'
+            ),
+            '</div>',
+            f'<table id="{table_id}" class="full-json-table">',
             "<thead>",
             "<tr>",
             "<th>Old JSON</th>",
@@ -182,6 +196,37 @@ def _render_full_json_section(diff: DiffResult) -> str:
             "</div>",
             "</details>",
             "</section>",
+        ]
+    )
+
+
+def _render_full_json_filter_script(table_id: str) -> str:
+    """Builds the JavaScript snippet enabling filtering for the full JSON table."""
+
+    return "\n".join(
+        [
+            "<script>",
+            "(function() {",
+            (
+                "    var filterInput = document.querySelector('[data-json-filter][data-json-target=\""
+                f"{table_id}"
+                "\"]');"
+            ),
+            f"    var table = document.getElementById('{table_id}');",
+            "    if (!filterInput || !table) {",
+            "        return;",
+            "    }",
+            "    var rows = table.querySelectorAll('tbody tr');",
+            "    filterInput.addEventListener('input', function(event) {",
+            "        var query = event.target.value.toLowerCase();",
+            "        Array.prototype.forEach.call(rows, function(row) {",
+            "            var text = row.textContent.toLowerCase();",
+            "            var shouldShow = !query || text.indexOf(query) !== -1;",
+            "            row.style.display = shouldShow ? '' : 'none';",
+            "        });",
+            "    });",
+            "})();",
+            "</script>",
         ]
     )
 
@@ -341,7 +386,7 @@ def _render_git_sections(entries: List[Dict[str, Any]]) -> str:
         return ""
 
     parts: List[str] = [
-        '<section class="gitdiff-container">',
+        '<section class="gitdiff-container page-section">',
         '<details class="panel-toggle diff-toggle" open>',
         '<summary>DIFF</summary>',
         '<div class="gitdiff-body">',
@@ -413,7 +458,7 @@ def _render_summary_panel(diff: DiffResult, anchor_map: Dict[str, str]) -> str:
     )
 
     panel_parts = [
-        '<section class="summary-panel">',
+        '<section class="summary-panel page-section">',
         '<details class="panel-toggle summary-toggle" open>',
         '<summary>SUMMARY</summary>',
         '<div class="summary-body">',
@@ -457,6 +502,8 @@ def render_html(diff: DiffResult) -> str:
         .panel-toggle:not([open]) summary::after { content: "+"; }
         .panel-toggle summary::marker { display: none; }
         .panel-toggle summary::-webkit-details-marker { display: none; }
+        .page-section { margin-bottom: 0; }
+        .page-section + .page-section { margin-top: 2rem; }
         .summary-body { margin-top: 1.5rem; }
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-top: 1.25rem; }
         .summary-card { display: block; border: 2px solid #cbd5f5; border-radius: 16px; padding: 1rem 1.25rem; background: #ffffff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4); transition: transform 0.2s ease, box-shadow 0.2s ease; }
@@ -509,6 +556,10 @@ def render_html(diff: DiffResult) -> str:
         .full-json-details summary:focus { outline: none; }
         .full-json-details[open] .full-json-wrapper { margin-top: 1rem; }
         .full-json-wrapper { overflow-x: auto; }
+        .full-json-filter { display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .full-json-filter__label { font-weight: 600; color: #1e293b; }
+        .full-json-filter__input { flex: 1 1 260px; max-width: 340px; padding: 0.5rem 0.75rem; border: 1px solid #cbd5f5; border-radius: 0.75rem; background: #f8fafc; color: #0f172a; }
+        .full-json-filter__input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
         .full-json-table { width: 100%; border-collapse: collapse; }
         .full-json-table th { text-align: left; padding: 0.75rem; background: #e2e8f0; color: #0f172a; }
         .full-json-table td { padding: 0; vertical-align: top; }
@@ -552,6 +603,7 @@ def render_html(diff: DiffResult) -> str:
     full_json_section = _render_full_json_section(diff)
     if full_json_section:
         html_parts.append(full_json_section)
+        html_parts.append(_render_full_json_filter_script(FULL_JSON_TABLE_ID))
 
     html_parts.append("</body>")
     html_parts.append("</html>")
