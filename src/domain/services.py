@@ -1,5 +1,6 @@
 """Domain services for computing JSON diffs."""
 
+from copy import deepcopy
 from typing import Any, Dict
 
 from .models import DiffResult
@@ -25,4 +26,6 @@ def compute_top_level_diff(source: Dict[str, Any], target: Dict[str, Any]) -> Di
         changed=changed,
         added_values=added_values,
         removed_values=removed_values,
+        source_snapshot=deepcopy(source),
+        target_snapshot=deepcopy(target),
     )
