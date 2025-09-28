@@ -5,7 +5,6 @@ from typing import Any, Dict
 from domain.models import DiffResult
 from domain.services import compute_top_level_diff
 
-
 class DiffUseCase:
     """Application service that orchestrates diff computation."""
 

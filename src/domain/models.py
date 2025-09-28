@@ -3,7 +3,6 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
-
 @dataclass(frozen=True)
 class DiffResult:
     """Represents the comparison outcome between two JSON documents."""

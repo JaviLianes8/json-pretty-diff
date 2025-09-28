@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 from .models import DiffResult
 
-
 def compute_top_level_diff(source: Dict[str, Any], target: Dict[str, Any]) -> DiffResult:
     """Computes the top-level diff between two JSON objects."""
 

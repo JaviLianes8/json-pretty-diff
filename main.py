@@ -11,7 +11,6 @@ if str(SRC_PATH) not in sys.path:
 
 from infrastructure.cli import JsonPrettyDiffCLI
 
-
 def main() -> int:
     """Runs the JSON Pretty Diff command-line interface."""
 
