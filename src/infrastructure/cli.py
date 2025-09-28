@@ -6,9 +6,9 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Sequence
 
-from jpd.application.use_cases import DiffUseCase
-from jpd.presentation.html_renderer import render_html
-from jpd import __version__
+from application.use_cases import DiffUseCase
+from presentation.html_renderer import render_html
+from version import __version__
 
 
 class JsonPrettyDiffCLI:
