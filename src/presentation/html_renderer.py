@@ -283,12 +283,12 @@ def _render_git_sections(entries: List[Dict[str, Any]]) -> str:
 def _render_summary_card(title: str, css_class: str, items_html: str) -> str:
     """Renders an individual summary card with its entries."""
 
-    parts = [f'<div class="summary-card {css_class}">', f"<h3>{title}</h3>"]
+    parts = [f'<details class="summary-card {css_class}" open>', f"<summary>{title}</summary>"]
     if items_html:
         parts.extend(['<ul class="summary-list">', items_html, '</ul>'])
     else:
         parts.append('<p class="empty">No entries.</p>')
-    parts.append('</div>')
+    parts.append('</details>')
     return "\n".join(parts)
 
 
@@ -338,7 +338,7 @@ def _render_summary_panel(diff: DiffResult, anchor_map: Dict[str, str]) -> str:
 
     panel_parts = [
         '<section class="summary-panel">',
-        '<div class="summary-header"><h2>JSON Pretty Diff</h2></div>',
+        '<div class="summary-header"><h2>Summary</h2></div>',
         '<div class="summary-grid">',
         summary_cards,
         '</div>',
@@ -373,13 +373,19 @@ def render_html(diff: DiffResult) -> str:
         .summary-panel { padding: 1.75rem; border: 2px solid #cbd5f5; border-radius: 20px; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(226, 232, 240, 0.5), rgba(255, 255, 255, 0.95)); box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1); }
         .summary-header h2 { margin: 0; text-transform: uppercase; letter-spacing: 0.04em; color: #1e293b; }
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-top: 1.25rem; }
-        .summary-card { border: 2px solid #cbd5f5; border-radius: 16px; padding: 1rem 1.25rem; background: #ffffff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .summary-card { display: block; border: 2px solid #cbd5f5; border-radius: 16px; padding: 1rem 1.25rem; background: #ffffff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4); transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .summary-card:hover { transform: translateY(-2px); box-shadow: 0 12px 22px rgba(15, 23, 42, 0.12); }
         .summary-card.added { border-color: #22c55e; background: linear-gradient(135deg, rgba(187, 247, 208, 0.65), rgba(255, 255, 255, 0.95)); }
         .summary-card.removed { border-color: #ef4444; background: linear-gradient(135deg, rgba(254, 202, 202, 0.65), rgba(255, 255, 255, 0.95)); }
         .summary-card.changed { border-color: #f97316; background: linear-gradient(135deg, rgba(254, 215, 170, 0.65), rgba(255, 255, 255, 0.95)); }
-        .summary-card h3 { margin-top: 0; margin-bottom: 0.75rem; color: #0f172a; }
+        .summary-card summary { list-style: none; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 1.05rem; margin: 0; color: #0f172a; cursor: pointer; }
+        .summary-card summary::after { content: "−"; font-size: 1.25rem; line-height: 1; color: #475569; }
+        .summary-card:not([open]) summary::after { content: "+"; }
+        .summary-card summary::marker { display: none; }
+        .summary-card summary::-webkit-details-marker { display: none; }
+        .summary-card[open] summary { margin-bottom: 0.75rem; }
         .summary-list { margin: 0; padding-left: 1.25rem; color: #1e293b; }
+        .summary-card:not([open]) .summary-list, .summary-card:not([open]) .empty { display: none; }
         .summary-card .empty { margin: 0; color: #64748b; font-style: italic; }
         .summary-footer { margin-top: 1.75rem; text-align: right; font-weight: 600; color: #1e293b; }
         .empty-state { margin-top: 1.5rem; color: #64748b; font-style: italic; }
