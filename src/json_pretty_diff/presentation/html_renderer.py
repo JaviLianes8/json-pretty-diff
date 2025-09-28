@@ -752,7 +752,25 @@ def render_html(diff: DiffResult) -> str:
         .full-json-details summary:focus { outline: none; }
         .full-json-details[open] .full-json-wrapper { margin-top: 1rem; }
         .full-json-wrapper { overflow-x: auto; }
-        .full-json-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; margin-bottom: 1rem; justify-content: space-between; }
+        .full-json-filter {
+            position: sticky;
+            top: 1rem;
+            z-index: 5;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            justify-content: space-between;
+            width: 100%;
+            box-sizing: border-box;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(248, 250, 252, 0.94));
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 0.85rem;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
+            backdrop-filter: blur(4px);
+        }
         .full-json-filter__field { display: flex; align-items: center; gap: 0.75rem; flex: 1 1 320px; min-width: 260px; }
         .full-json-filter__label { font-weight: 600; color: #1e293b; white-space: nowrap; }
         .full-json-filter__input { flex: 1 1 auto; min-width: 0; padding: 0.5rem 0.75rem; border: 1px solid #cbd5f5; border-radius: 0.75rem; background: #f8fafc; color: #0f172a; }
