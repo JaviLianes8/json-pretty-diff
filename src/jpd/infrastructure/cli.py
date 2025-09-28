@@ -8,6 +8,7 @@ from typing import Any, Dict, Sequence
 
 from jpd.application.use_cases import DiffUseCase
 from jpd.presentation.html_renderer import render_html
+from jpd import __version__
 
 
 class JsonPrettyDiffCLI:
@@ -19,6 +20,11 @@ class JsonPrettyDiffCLI:
         self._parser = argparse.ArgumentParser(
             prog="jpd",
             description="Generate an HTML diff between two JSON files.",
+        )
+        self._parser.add_argument(
+            "--version",
+            action="version",
+            version=f"%(prog)s {__version__}",
         )
         self._parser.add_argument("source", help="Path to the original JSON file.")
         self._parser.add_argument("target", help="Path to the modified JSON file.")
