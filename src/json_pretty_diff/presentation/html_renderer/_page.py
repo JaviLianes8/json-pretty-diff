@@ -13,7 +13,6 @@ from ._full_json import FULL_JSON_TABLE_ID, render_full_json_section
 from ._full_json_script import render_full_json_filter_script
 from ._summary import render_summary_panel
 
-
 def render_html(diff: DiffResult) -> str:
     """Builds the complete HTML report for a diff result."""
 
@@ -173,6 +172,5 @@ def render_html(diff: DiffResult) -> str:
     html_parts.append("</body>")
     html_parts.append("</html>")
     return "\n".join(html_parts)
-
 
 __all__ = ["render_html"]

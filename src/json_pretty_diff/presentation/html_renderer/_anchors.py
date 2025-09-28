@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Dict
 
-
 def sanitize_anchor(key: str, used: Dict[str, int]) -> str:
     """Creates a safe and unique anchor identifier for the given key."""
 
@@ -16,6 +15,5 @@ def sanitize_anchor(key: str, used: Dict[str, int]) -> str:
         anchor = base
     used[base] = index + 1
     return anchor
-
 
 __all__ = ["sanitize_anchor"]

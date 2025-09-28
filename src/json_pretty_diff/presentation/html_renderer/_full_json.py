@@ -11,7 +11,6 @@ from ...domain.models import DiffResult
 
 FULL_JSON_TABLE_ID = "full-json-table"
 
-
 def _serialize_full_json(data: Any) -> str:
     """Serializes the complete JSON snapshot preserving readability."""
 
@@ -19,7 +18,6 @@ def _serialize_full_json(data: Any) -> str:
         return json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False)
     except (TypeError, ValueError):
         return repr(data)
-
 
 def _build_side_by_side_rows(old_lines: List[str], new_lines: List[str]) -> str:
     """Creates table rows that highlight line-level differences."""
@@ -61,7 +59,6 @@ def _build_side_by_side_rows(old_lines: List[str], new_lines: List[str]) -> str:
             )
 
     return "\n".join(rows)
-
 
 def render_full_json_section(diff: DiffResult) -> str:
     """Renders the expandable section that shows both JSON snapshots."""

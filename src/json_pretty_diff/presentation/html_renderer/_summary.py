@@ -7,7 +7,6 @@ from typing import Dict, Iterable, List
 
 from ...domain.models import DiffResult
 
-
 def _render_summary_card(title: str, css_class: str, items_html: str) -> str:
     """Builds a summary card with its item list."""
 
@@ -19,7 +18,6 @@ def _render_summary_card(title: str, css_class: str, items_html: str) -> str:
     parts.append('</div>')
     return "\n".join(parts)
 
-
 def _render_key_links(keys: Iterable[str], anchor_map: Dict[str, str]) -> str:
     """Creates a list of links pointing to diff sections for the given keys."""
 
@@ -27,7 +25,6 @@ def _render_key_links(keys: Iterable[str], anchor_map: Dict[str, str]) -> str:
         f'<li><a href="#diff-{html.escape(anchor_map[key])}"><code>{html.escape(key)}</code></a></li>'
         for key in keys
     )
-
 
 def _render_changed_links(keys: Iterable[str], anchor_map: Dict[str, str]) -> str:
     """Creates the list of anchors used in the changed summary column."""
@@ -48,7 +45,6 @@ def _render_changed_links(keys: Iterable[str], anchor_map: Dict[str, str]) -> st
             )
         )
     return "".join(items)
-
 
 def render_summary_panel(diff: DiffResult, anchor_map: Dict[str, str]) -> str:
     """Builds the summary panel grouping added, removed, and changed keys."""
@@ -94,6 +90,5 @@ def render_summary_panel(diff: DiffResult, anchor_map: Dict[str, str]) -> str:
         ['<footer class="summary-footer">', summary_counts, '</footer>', '</div>', '</details>', '</section>']
     )
     return "\n".join(panel_parts)
-
 
 __all__ = ["render_summary_panel"]

@@ -10,14 +10,12 @@ from ...domain.models import DiffResult
 
 MISSING = object()
 
-
 def truncate_text(value: str, limit: int = 10_000) -> Tuple[str, bool]:
     """Truncates long text values returning the cut string and a flag."""
 
     if len(value) <= limit:
         return value, False
     return value[:limit], True
-
 
 def serialize_for_diff(value: Any) -> str:
     """Serializes arbitrary data structures so that they can be diffed."""
@@ -27,7 +25,6 @@ def serialize_for_diff(value: Any) -> str:
     except (TypeError, ValueError):
         return repr(value)
 
-
 def prepare_serialized_for_diff(value: Any) -> Tuple[str, bool, str]:
     """Provides serialized and truncated representations for diff rendering."""
 
@@ -36,7 +33,6 @@ def prepare_serialized_for_diff(value: Any) -> Tuple[str, bool, str]:
     serialized = serialize_for_diff(value)
     truncated, was_truncated = truncate_text(serialized)
     return truncated, was_truncated, serialized
-
 
 def diff_lines(old: Iterable[str], new: Iterable[str]) -> List[str]:
     """Computes a unified diff for the provided iterables of lines."""
@@ -50,7 +46,6 @@ def diff_lines(old: Iterable[str], new: Iterable[str]) -> List[str]:
             lineterm="",
         )
     )
-
 
 def build_git_entries(diff: DiffResult, anchors: Dict[str, str]) -> List[Dict[str, Any]]:
     """Builds ordered entries that describe the diff payload for each key."""

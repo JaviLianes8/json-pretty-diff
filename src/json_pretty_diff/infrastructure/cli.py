@@ -11,7 +11,6 @@ from ..application.use_cases import DiffUseCase
 from ..presentation.html_renderer import render_html
 from ..version import __version__
 
-
 class JsonPrettyDiffCLI:
     """Facade that exposes the command-line entry point."""
 

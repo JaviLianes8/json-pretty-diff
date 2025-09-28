@@ -23,7 +23,6 @@ SOCIAL_LINKS: Tuple[Tuple[str, str, str], ...] = (
     ),
 )
 
-
 def _render_social_link(label: str, href: str, icon: str) -> str:
     """Builds the anchor tag for a single social link."""
 
@@ -64,6 +63,5 @@ def render_branding_header() -> str:
             '</header>',
         ]
     )
-
 
 __all__ = ["render_branding_header", "SOCIAL_LINKS"]

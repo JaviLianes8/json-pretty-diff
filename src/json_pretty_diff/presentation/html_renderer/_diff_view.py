@@ -7,7 +7,6 @@ from typing import Any, Dict, Iterable, List
 
 from ._diff_data import diff_lines, prepare_serialized_for_diff
 
-
 def render_diff_lines(lines: Iterable[str], truncated: bool) -> str:
     """Turns diff lines into HTML spans with contextual classes."""
 
@@ -97,7 +96,6 @@ def render_truncated_details(
         ]
     )
 
-
 def render_diff_section(entry: Dict[str, Any]) -> str:
     """Renders the HTML section containing the formatted diff for one key."""
 
@@ -138,7 +136,6 @@ def render_diff_section(entry: Dict[str, Any]) -> str:
 
     return "\n".join(section_parts)
 
-
 def render_git_sections(entries: List[Dict[str, Any]]) -> str:
     """Renders the diff sections for the provided entries."""
 
@@ -159,7 +156,6 @@ def render_git_sections(entries: List[Dict[str, Any]]) -> str:
     parts.extend(render_diff_section(entry) for entry in entries)
     parts.extend(['</div>', '</details>', '</section>'])
     return "\n".join(parts)
-
 
 __all__ = [
     "render_diff_lines",

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-
 def render_full_json_filter_script(table_id: str) -> str:
     """Builds the JavaScript snippet that powers the full JSON filter."""
 
@@ -100,6 +99,5 @@ def render_full_json_filter_script(table_id: str) -> str:
 }})();
 </script>
 """.strip()
-
 
 __all__ = ["render_full_json_filter_script"]
