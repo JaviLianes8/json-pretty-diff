@@ -234,29 +234,6 @@ def _render_full_json_section(diff: DiffResult) -> str:
                 f'data-json-target="{table_id}" />'
             ),
             '</div>',
-            (
-                f'<div class="full-json-filter__summary" '
-                'data-json-filter-summary="true" '
-                f'data-json-target="{table_id}">' 
-                'Type to highlight occurrences.'
-                '</div>'
-            ),
-            '<div class="full-json-filter__nav">',
-            (
-                '<button type="button" '
-                'class="full-json-filter__nav-button" '
-                'data-json-filter-prev="true" '
-                f'data-json-target="{table_id}" '
-                'disabled>Previous</button>'
-            ),
-            (
-                '<button type="button" '
-                'class="full-json-filter__nav-button" '
-                'data-json-filter-next="true" '
-                f'data-json-target="{table_id}" '
-                'disabled>Next</button>'
-            ),
-            '</div>',
             f'<table id="{table_id}" class="full-json-table">',
             "<thead>",
             "<tr>",
@@ -290,13 +267,8 @@ def _render_full_json_filter_script(table_id: str) -> str:
     Array.prototype.forEach.call(preElements, function(pre) {{
         pre.setAttribute('data-original-text', pre.textContent || '');
     }});
-    var summary = document.querySelector('[data-json-filter-summary][data-json-target="{table_id}"]');
-    var prevButton = document.querySelector('[data-json-filter-prev][data-json-target="{table_id}"]');
-    var nextButton = document.querySelector('[data-json-filter-next][data-json-target="{table_id}"]');
     var filterContainer = filterInput.closest('.full-json-filter');
     var matches = [];
-    var activeIndex = -1;
-    var currentQuery = '';
 
     function escapeHtml(value) {{
         return value
@@ -309,23 +281,21 @@ def _render_full_json_filter_script(table_id: str) -> str:
 
     function highlightText(text, query) {{
         if (!query) {{
-            return {{ html: escapeHtml(text), count: 0 }};
+            return escapeHtml(text);
         }}
         var lowerText = text.toLowerCase();
         var lowerQuery = query.toLowerCase();
         var result = '';
         var lastIndex = 0;
-        var count = 0;
         var index = lowerText.indexOf(lowerQuery);
         while (index !== -1) {{
             result += escapeHtml(text.slice(lastIndex, index));
             result += '<mark class="full-json-highlight">' + escapeHtml(text.slice(index, index + query.length)) + '</mark>';
             lastIndex = index + query.length;
-            count += 1;
             index = lowerText.indexOf(lowerQuery, lastIndex);
         }}
         result += escapeHtml(text.slice(lastIndex));
-        return {{ html: result, count: count }};
+        return result;
     }}
 
     function ensureMatchVisible(target) {{
@@ -358,95 +328,24 @@ def _render_full_json_filter_script(table_id: str) -> str:
         }}
     }}
 
-    function setActiveMatch(index) {{
-        if (!matches.length) {{
-            activeIndex = -1;
-            return;
-        }}
-        matches.forEach(function(mark) {{
-            mark.classList.remove('full-json-highlight--active');
-        }});
-        var target = matches[index];
-        if (target) {{
-            target.classList.add('full-json-highlight--active');
-            ensureMatchVisible(target);
-            activeIndex = index;
-        }}
-    }}
-
-    function updateSummary(total) {{
-        if (!summary) {{
-            return;
-        }}
-        if (!currentQuery) {{
-            summary.textContent = 'Type to highlight occurrences.';
-        }} else if (!total) {{
-            summary.textContent = 'No matches found for "' + currentQuery + '".';
-        }} else {{
-            summary.textContent = 'Matches for "' + currentQuery + '": ' + total + ' (showing ' + (activeIndex + 1) + ' of ' + total + ').';
-        }}
-    }}
-
-    function updateNavigation(total) {{
-        if (prevButton) {{
-            prevButton.disabled = total <= 1;
-        }}
-        if (nextButton) {{
-            nextButton.disabled = total <= 1;
-        }}
-    }}
-
     function performSearch(query) {{
-        currentQuery = query;
-        var totalMatches = 0;
         Array.prototype.forEach.call(preElements, function(pre) {{
             var original = pre.getAttribute('data-original-text');
             if (original === null) {{
                 original = pre.textContent || '';
                 pre.setAttribute('data-original-text', original);
             }}
-            var result = highlightText(original, query);
-            pre.innerHTML = result.html;
-            totalMatches += result.count;
+            pre.innerHTML = highlightText(original, query);
         }});
         matches = Array.prototype.slice.call(table.querySelectorAll('mark.full-json-highlight'));
         if (matches.length) {{
-            setActiveMatch(0);
-        }} else {{
-            activeIndex = -1;
+            ensureMatchVisible(matches[0]);
         }}
-        updateSummary(totalMatches);
-        updateNavigation(matches.length);
     }}
 
     filterInput.addEventListener('input', function(event) {{
         performSearch(event.target.value);
     }});
-
-    if (prevButton) {{
-        prevButton.addEventListener('click', function() {{
-            if (!matches.length) {{
-                return;
-            }}
-            var nextIndex = activeIndex <= 0 ? matches.length - 1 : activeIndex - 1;
-            setActiveMatch(nextIndex);
-            updateSummary(matches.length);
-        }});
-    }}
-
-    if (nextButton) {{
-        nextButton.addEventListener('click', function() {{
-            if (!matches.length) {{
-                return;
-            }}
-            var nextIndex = (activeIndex + 1) % matches.length;
-            setActiveMatch(nextIndex);
-            updateSummary(matches.length);
-        }});
-    }}
-
-    updateSummary(0);
-    updateNavigation(0);
 }})();
 </script>
 """.strip()
@@ -806,13 +705,7 @@ def render_html(diff: DiffResult) -> str:
         .full-json-filter__label { font-weight: 600; color: #1e293b; white-space: nowrap; }
         .full-json-filter__input { flex: 1 1 auto; min-width: 0; padding: 0.5rem 0.75rem; border: 1px solid #cbd5f5; border-radius: 0.75rem; background: #f8fafc; color: #0f172a; }
         .full-json-filter__input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
-        .full-json-filter__summary { font-weight: 500; color: #1e293b; min-height: 1.5rem; display: flex; align-items: center; flex: 1 1 100%; margin-top: 0.25rem; }
-        .full-json-filter__nav { display: flex; gap: 0.5rem; margin-left: auto; }
-        .full-json-filter__nav-button { padding: 0.35rem 0.75rem; border-radius: 0.6rem; border: 1px solid #cbd5f5; background: #e2e8f0; color: #0f172a; font-weight: 600; cursor: pointer; transition: background 0.2s ease, box-shadow 0.2s ease; }
-        .full-json-filter__nav-button:hover:not([disabled]) { background: #cbd5f5; box-shadow: 0 6px 12px rgba(15, 23, 42, 0.12); }
-        .full-json-filter__nav-button[disabled] { cursor: not-allowed; opacity: 0.5; box-shadow: none; }
         .full-json-highlight { background: #fde68a; color: #7c2d12; border-radius: 0.35rem; padding: 0 0.2rem; box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.6); }
-        .full-json-highlight--active { background: #fbbf24; color: #78350f; box-shadow: 0 0 0 2px #f59e0b; }
         .full-json-table { width: 100%; border-collapse: collapse; }
         .full-json-table th { text-align: left; padding: 0.75rem; background: #e2e8f0; color: #0f172a; }
         .full-json-table td { padding: 0; vertical-align: top; }
