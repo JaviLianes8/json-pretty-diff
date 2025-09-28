@@ -234,7 +234,7 @@ def _render_full_json_section(diff: DiffResult) -> str:
                 f'data-json-target="{table_id}" />'
             ),
             '</div>',
-            '<div class="full-json-filter__status">',
+            '<div class="full-json-filter__status-bar">',
             (
                 f'<div class="full-json-filter__summary" '
                 'data-json-filter-summary="true" '
@@ -257,6 +257,7 @@ def _render_full_json_section(diff: DiffResult) -> str:
                 f'data-json-target="{table_id}" '
                 'disabled>Next</button>'
             ),
+            '</div>',
             '</div>',
             '</div>',
             f'<table id="{table_id}" class="full-json-table">',
@@ -754,12 +755,12 @@ def render_html(diff: DiffResult) -> str:
         .full-json-details summary:focus { outline: none; }
         .full-json-details[open] .full-json-wrapper { margin-top: 1rem; }
         .full-json-wrapper { position: relative; overflow-x: auto; }
-        .full-json-filter { position: sticky; top: 0; z-index: 5; display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; padding: 0.85rem 1rem; border-radius: 0.85rem; background: linear-gradient(135deg, rgba(226, 232, 240, 0.92), rgba(255, 255, 255, 0.98)); box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12); backdrop-filter: blur(6px); }
+        .full-json-filter { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
         .full-json-filter__field { display: flex; align-items: center; gap: 0.75rem; flex: 1 1 320px; min-width: 260px; }
         .full-json-filter__label { font-weight: 600; color: #1e293b; white-space: nowrap; }
         .full-json-filter__input { flex: 1 1 auto; min-width: 0; padding: 0.5rem 0.75rem; border: 1px solid #cbd5f5; border-radius: 0.75rem; background: #f8fafc; color: #0f172a; }
         .full-json-filter__input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
-        .full-json-filter__status { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; }
+        .full-json-filter__status-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; padding: 0.4rem 0.75rem; border-radius: 0.75rem; background: rgba(248, 250, 252, 0.96); border: 1px solid #cbd5f5; box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08); }
         .full-json-filter__summary { font-weight: 500; color: #1e293b; min-height: 1.5rem; display: flex; align-items: center; flex: 1 1 auto; min-width: 200px; }
         .full-json-filter__nav { display: flex; gap: 0.5rem; margin-left: auto; }
         .full-json-filter__nav-button { padding: 0.35rem 0.75rem; border-radius: 0.6rem; border: 1px solid #cbd5f5; background: #e2e8f0; color: #0f172a; font-weight: 600; cursor: pointer; transition: background 0.2s ease, box-shadow 0.2s ease; }
