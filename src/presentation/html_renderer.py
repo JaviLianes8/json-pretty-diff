@@ -168,8 +168,8 @@ def _render_full_json_section(diff: DiffResult) -> str:
     return "\n".join(
         [
             '<section class="full-json-section">',
-            '<details class="full-json-details">',
-            '<summary>See full JSON pretty print</summary>',
+            '<details class="panel-toggle full-json-details" open>',
+            '<summary>FULL JSON</summary>',
             '<div class="full-json-wrapper">',
             '<table class="full-json-table">',
             "<thead>",
@@ -265,18 +265,19 @@ def _render_git_sections(entries: List[Dict[str, Any]]) -> str:
     if not entries:
         return ""
 
-    parts: List[str] = ['<section class="gitdiff-container">', '<h2>Diff</h2>']
-    parts.extend(
-        [
-            '<pre class="gitdiff gitdiff-legend">',
-            '<span class="ctx">--- old</span>',
-            '<span class="ctx">+++ new</span>',
-            '</pre>',
-        ]
-    )
+    parts: List[str] = [
+        '<section class="gitdiff-container">',
+        '<details class="panel-toggle diff-toggle" open>',
+        '<summary>DIFF</summary>',
+        '<div class="gitdiff-body">',
+        '<pre class="gitdiff gitdiff-legend">',
+        '<span class="ctx">--- old</span>',
+        '<span class="ctx">+++ new</span>',
+        '</pre>',
+    ]
 
     parts.extend(_render_diff_section(entry) for entry in entries)
-    parts.append("</section>")
+    parts.extend(['</div>', '</details>', '</section>'])
     return "\n".join(parts)
 
 
@@ -338,7 +339,9 @@ def _render_summary_panel(diff: DiffResult, anchor_map: Dict[str, str]) -> str:
 
     panel_parts = [
         '<section class="summary-panel">',
-        '<div class="summary-header"><h2>Summary</h2></div>',
+        '<details class="panel-toggle summary-toggle" open>',
+        '<summary>Summary</summary>',
+        '<div class="summary-body">',
         '<div class="summary-grid">',
         summary_cards,
         '</div>',
@@ -347,7 +350,9 @@ def _render_summary_panel(diff: DiffResult, anchor_map: Dict[str, str]) -> str:
     if not diff.has_differences:
         panel_parts.append('<p class="empty-state">No differences.</p>')
 
-    panel_parts.extend(['<footer class="summary-footer">', summary_counts, '</footer>', '</section>'])
+    panel_parts.extend(
+        ['<footer class="summary-footer">', summary_counts, '</footer>', '</div>', '</details>', '</section>']
+    )
     return "\n".join(panel_parts)
 
 
@@ -371,7 +376,13 @@ def render_html(diff: DiffResult) -> str:
         a { color: #2563eb; text-decoration: none; }
         a:hover { color: #1d4ed8; text-decoration: none; }
         .summary-panel { padding: 1.75rem; border: 2px solid #cbd5f5; border-radius: 20px; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(226, 232, 240, 0.5), rgba(255, 255, 255, 0.95)); box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1); }
-        .summary-header h2 { margin: 0; text-transform: uppercase; letter-spacing: 0.04em; color: #1e293b; }
+        .panel-toggle { display: block; }
+        .panel-toggle summary { list-style: none; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 1.15rem; margin: 0; color: #0f172a; cursor: pointer; letter-spacing: 0.05em; }
+        .panel-toggle summary::after { content: "−"; font-size: 1.35rem; line-height: 1; color: #475569; }
+        .panel-toggle:not([open]) summary::after { content: "+"; }
+        .panel-toggle summary::marker { display: none; }
+        .panel-toggle summary::-webkit-details-marker { display: none; }
+        .summary-body { margin-top: 1.5rem; }
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-top: 1.25rem; }
         .summary-card { display: block; border: 2px solid #cbd5f5; border-radius: 16px; padding: 1rem 1.25rem; background: #ffffff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4); transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .summary-card:hover { transform: translateY(-2px); box-shadow: 0 12px 22px rgba(15, 23, 42, 0.12); }
@@ -390,7 +401,7 @@ def render_html(diff: DiffResult) -> str:
         .summary-footer { margin-top: 1.75rem; text-align: right; font-weight: 600; color: #1e293b; }
         .empty-state { margin-top: 1.5rem; color: #64748b; font-style: italic; }
         .gitdiff-container { border: 1px solid #cbd5f5; border-radius: 16px; padding: 1.5rem; background: #ffffff; box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12); }
-        .gitdiff-container h2 { margin-top: 0; color: #1e293b; }
+        .gitdiff-body { margin-top: 1.25rem; }
         .gitdiff-legend { margin: 0.5rem 0 1rem; border-radius: 10px; background: #f1f5f9; padding: 0.75rem 1rem; display: inline-block; }
         .gitdiff-legend span { display: block; font-weight: 600; color: #475569; }
         .gitdiff-block { border: 1px solid #cbd5f5; border-radius: 12px; padding: 1rem 1.25rem; background: linear-gradient(135deg, rgba(224, 231, 255, 0.65), rgba(255, 255, 255, 0.95)); margin-top: 1rem; }
@@ -413,9 +424,10 @@ def render_html(diff: DiffResult) -> str:
         .gitdiff-container a { color: inherit; text-decoration: none; }
         .gitdiff-container a:hover { color: inherit; text-decoration: none; }
         .full-json-section { border: 1px solid #cbd5f5; border-radius: 16px; padding: 1.5rem; background: #ffffff; box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12); }
-        .full-json-details summary { font-weight: 600; cursor: pointer; color: #1e293b; }
+        .full-json-details summary { color: #1e293b; }
         .full-json-details summary:focus { outline: none; }
-        .full-json-wrapper { margin-top: 1rem; overflow-x: auto; }
+        .full-json-details[open] .full-json-wrapper { margin-top: 1rem; }
+        .full-json-wrapper { overflow-x: auto; }
         .full-json-table { width: 100%; border-collapse: collapse; }
         .full-json-table th { text-align: left; padding: 0.75rem; background: #e2e8f0; color: #0f172a; }
         .full-json-table td { padding: 0; vertical-align: top; }
