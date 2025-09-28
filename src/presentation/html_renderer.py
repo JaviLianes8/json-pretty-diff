@@ -197,8 +197,8 @@ def render_html(diff: DiffResult) -> str:
             word-break: break-word;
             color: #0f172a;
         }
-        a { color: #2563eb; }
-        a:hover { color: #1d4ed8; }
+        a { color: #2563eb; text-decoration: none; }
+        a:hover { color: #1d4ed8; text-decoration: none; }
         .gitdiff-container { border: 1px solid #cbd5f5; border-radius: 16px; padding: 1.5rem; background: #ffffff; box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12); }
         .gitdiff-container h2 { margin-top: 0; color: #1e293b; }
         .gitdiff-block { border: 1px solid #cbd5f5; border-radius: 12px; padding: 1rem 1.25rem; background: linear-gradient(135deg, rgba(224, 231, 255, 0.65), rgba(255, 255, 255, 0.95)); margin-top: 1rem; }
@@ -212,6 +212,14 @@ def render_html(diff: DiffResult) -> str:
         .gitdiff .del { background: #fee2e2; color: #991b1b; }
         .gitdiff .ctx { color: #475569; }
         .gitdiff .hunk { background: #dbeafe; color: #1d4ed8; font-weight: 600; }
+        .change-link { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; align-items: baseline; color: inherit; }
+        .change-key { font-weight: 600; }
+        .change-link code { color: inherit; }
+        .change-values { color: #475569; }
+        .change-link:hover { color: #1d4ed8; }
+        .change-link:hover code { color: inherit; }
+        .gitdiff-container a { color: inherit; text-decoration: none; }
+        .gitdiff-container a:hover { color: inherit; text-decoration: none; }
     </style>
     """.strip()
 
@@ -258,18 +266,29 @@ def render_html(diff: DiffResult) -> str:
         f'<li><a href="#diff-{html.escape(anchor_map[key])}"><code>{html.escape(key)}</code></a></li>'
         for key in removed_keys
     )
-    changed_items = "".join(
-        (
-            "<li><a href="#diff-{anchor}"><code>{key}</code></a>: <code>{old}</code> → "
-            "<code>{new}</code></li>".format(
-                anchor=html.escape(anchor_map[key]),
-                key=html.escape(key),
-                old=_format_value(diff.changed[key]["old"]),
-                new=_format_value(diff.changed[key]["new"]),
+    changed_items_parts: List[str] = []
+    for key in changed_keys:
+        anchor = html.escape(anchor_map[key])
+        key_label = html.escape(key)
+        old_value = _format_value(diff.changed[key]["old"])
+        new_value = _format_value(diff.changed[key]["new"])
+        changed_items_parts.append(
+            "".join(
+                [
+                    "<li>",
+                    f'<a href="#diff-{anchor}" class="change-link">',
+                    f'<span class="change-key"><code>{key_label}</code></span>',
+                    (
+                        '<span class="change-values">'
+                        f"<code>{old_value}</code> → <code>{new_value}</code>"
+                        "</span>"
+                    ),
+                    "</a>",
+                    "</li>",
+                ]
             )
         )
-        for key in changed_keys
-    )
+    changed_items = "".join(changed_items_parts)
 
     render_section("Added", "added", added_items)
     render_section("Removed", "removed", removed_items)
