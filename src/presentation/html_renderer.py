@@ -170,7 +170,7 @@ def _render_git_sections(entries: List[Dict[str, Any]]) -> str:
     if not entries:
         return ""
 
-    parts: List[str] = ['<section class="gitdiff-container">', '<h2>Diferencias detalladas</h2>']
+    parts: List[str] = ['<section class="gitdiff-container">', '<h2>Diff</h2>']
 
     parts.extend(_render_diff_section(entry) for entry in entries)
     parts.append("</section>")
@@ -251,7 +251,7 @@ def render_html(diff: DiffResult) -> str:
             anchor_map[key] = _sanitize_anchor(key, used_anchors)
 
     added_items = "".join(
-        f"<li><code>{html.escape(key)}</code></li>"
+        f'<li><a href="#diff-{html.escape(anchor_map[key])}"><code>{html.escape(key)}</code></a></li>'
         for key in added_keys
     )
     removed_items = "".join(
@@ -275,7 +275,13 @@ def render_html(diff: DiffResult) -> str:
     render_section("Removed", "removed", removed_items)
     render_section("Changed", "changed", changed_items)
 
-    summary = f"Added: {len(diff.added)} · Removed: {len(diff.removed)} · Changed: {len(diff.changed)}"
+    summary = (
+        "Added: {added}&nbsp;·&nbsp;Removed: {removed}&nbsp;·&nbsp;Changed: {changed}"
+    ).format(
+        added=len(diff.added),
+        removed=len(diff.removed),
+        changed=len(diff.changed),
+    )
     if not diff.has_differences:
         html_parts.append("<p>No differences.</p>")
     html_parts.append(f"<footer>{summary}</footer>")
