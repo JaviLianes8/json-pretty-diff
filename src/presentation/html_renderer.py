@@ -98,7 +98,7 @@ def _render_diff_lines(lines: Iterable[str], truncated: bool) -> str:
 
 
 def _render_diff_section(entry: Dict[str, Any]) -> str:
-    """Builds the HTML section containing the git-style diff for a key."""
+    """Builds the HTML section containing the formatted diff for a key."""
 
     key = entry["key"]
     anchor = entry["anchor"]
@@ -124,7 +124,7 @@ def _render_diff_section(entry: Dict[str, Any]) -> str:
 
 
 def _build_git_entries(diff: DiffResult, anchors: Dict[str, str]) -> List[Dict[str, Any]]:
-    """Prepares the ordered list of entries to render as git-style sections."""
+    """Prepares the ordered list of entries to render as detailed diff sections."""
 
     entries: List[Dict[str, Any]] = []
 
@@ -165,20 +165,12 @@ def _build_git_entries(diff: DiffResult, anchors: Dict[str, str]) -> List[Dict[s
 
 
 def _render_git_sections(entries: List[Dict[str, Any]]) -> str:
-    """Renders the git-style diff sections for all tracked keys."""
+    """Renders the diff sections for all tracked keys."""
 
     if not entries:
         return ""
 
-    parts: List[str] = ['<section class="gitdiff-container">', '<h2>Git-style diff</h2>']
-
-    if len(entries) > 1:
-        parts.append('<nav class="diff-index"><strong>Índice:</strong><ul>')
-        parts.extend(
-            f'<li><a href="#diff-{entry["anchor"]}"><code>{html.escape(entry["key"])}</code></a></li>'
-            for entry in entries
-        )
-        parts.append("</ul></nav>")
+    parts: List[str] = ['<section class="gitdiff-container">', '<h2>Diferencias detalladas</h2>']
 
     parts.extend(_render_diff_section(entry) for entry in entries)
     parts.append("</section>")
@@ -190,38 +182,36 @@ def render_html(diff: DiffResult) -> str:
 
     styles = """
     <style>
-        :root {
-            color-scheme: dark;
-        }
-        body { font-family: Arial, sans-serif; margin: 2rem; background: #020617; color: #e2e8f0; }
-        section { padding: 1rem; border: 1px solid #1e293b; border-radius: 8px; margin-bottom: 1.5rem; background: #0f172a; }
-        section h2 { margin-top: 0; }
+        body { font-family: Arial, sans-serif; margin: 2rem; background: #f8fafc; color: #0f172a; }
+        section { padding: 1rem; border: 1px solid #cbd5f5; border-radius: 12px; margin-bottom: 1.5rem; background: #ffffff; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); }
+        section h2 { margin-top: 0; color: #0f172a; }
         section ul { margin: 0; padding-left: 1.5rem; }
-        section.empty { color: #94a3b8; font-style: italic; background: #0b1120; }
-        section.added { border-color: #047857; background: #022c22; }
-        section.removed { border-color: #b91c1c; background: #2f1515; }
-        section.changed { border-color: #f59e0b; background: #3b2f03; }
-        footer { font-weight: bold; }
+        section.empty { color: #64748b; font-style: italic; background: #f1f5f9; border-style: dashed; }
+        section.added { border-color: #22c55e; background: #ecfdf5; }
+        section.removed { border-color: #ef4444; background: #fef2f2; }
+        section.changed { border-color: #f97316; background: #fff7ed; }
+        footer { font-weight: bold; margin-top: 2rem; color: #0f172a; }
         code {
             font-family: "Fira Code", "Courier New", monospace;
             white-space: pre-wrap;
             word-break: break-word;
+            color: #0f172a;
         }
-        .gitdiff-container { border: 1px solid #1e293b; border-radius: 8px; padding: 1rem; background: #0b1120; color: #e2e8f0; }
-        .gitdiff-container h2 { margin-top: 0; }
-        .gitdiff-container nav ul { list-style: none; padding-left: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
-        .gitdiff-container nav li { margin: 0; }
-        .gitdiff-container nav a { color: #93c5fd; text-decoration: none; }
-        .gitdiff-container nav a:hover { text-decoration: underline; }
-        .gitdiff-block { border: 1px solid #1e293b; border-radius: 8px; padding: 1rem; background: #111c34; }
-        .gitdiff-block.added { border-color: #047857; }
-        .gitdiff-block.removed { border-color: #b91c1c; }
-        .gitdiff-block.changed { border-color: #f59e0b; }
-        .gitdiff { font-family: monospace; padding: 1rem; border-radius: 8px; background: #0f172a; color: #e2e8f0; }
-        .gitdiff .add { display: block; background: #064e3b; }
-        .gitdiff .del { display: block; background: #7f1d1d; }
-        .gitdiff .ctx { display: block; opacity: 0.8; }
-        .gitdiff .hunk { display: block; color: #93c5fd; }
+        a { color: #2563eb; }
+        a:hover { color: #1d4ed8; }
+        .gitdiff-container { border: 1px solid #cbd5f5; border-radius: 16px; padding: 1.5rem; background: #ffffff; box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12); }
+        .gitdiff-container h2 { margin-top: 0; color: #1e293b; }
+        .gitdiff-block { border: 1px solid #cbd5f5; border-radius: 12px; padding: 1rem 1.25rem; background: linear-gradient(135deg, rgba(224, 231, 255, 0.65), rgba(255, 255, 255, 0.95)); margin-top: 1rem; }
+        .gitdiff-block.added { border-color: #22c55e; background: linear-gradient(135deg, rgba(187, 247, 208, 0.7), rgba(236, 253, 245, 0.95)); }
+        .gitdiff-block.removed { border-color: #ef4444; background: linear-gradient(135deg, rgba(254, 202, 202, 0.7), rgba(254, 242, 242, 0.95)); }
+        .gitdiff-block.changed { border-color: #f97316; background: linear-gradient(135deg, rgba(254, 215, 170, 0.7), rgba(255, 247, 237, 0.95)); }
+        .gitdiff-block h3 { margin-top: 0; color: #0f172a; }
+        .gitdiff { font-family: "Fira Code", "Courier New", monospace; padding: 1rem; border-radius: 10px; background: #f1f5f9; color: #0f172a; overflow-x: auto; }
+        .gitdiff span { display: block; padding: 0.15rem 0.35rem; border-radius: 6px; }
+        .gitdiff .add { background: #dcfce7; color: #14532d; }
+        .gitdiff .del { background: #fee2e2; color: #991b1b; }
+        .gitdiff .ctx { color: #475569; }
+        .gitdiff .hunk { background: #dbeafe; color: #1d4ed8; font-weight: 600; }
     </style>
     """.strip()
 
@@ -261,18 +251,18 @@ def render_html(diff: DiffResult) -> str:
             anchor_map[key] = _sanitize_anchor(key, used_anchors)
 
     added_items = "".join(
-        f'<li><a href="#diff-{anchor_map[key]}"><code>{html.escape(key)}</code></a></li>'
+        f"<li><code>{html.escape(key)}</code></li>"
         for key in added_keys
     )
     removed_items = "".join(
-        f'<li><a href="#diff-{anchor_map[key]}"><code>{html.escape(key)}</code></a></li>'
+        f'<li><a href="#diff-{html.escape(anchor_map[key])}"><code>{html.escape(key)}</code></a></li>'
         for key in removed_keys
     )
     changed_items = "".join(
         (
             "<li><a href="#diff-{anchor}"><code>{key}</code></a>: <code>{old}</code> → "
             "<code>{new}</code></li>".format(
-                anchor=anchor_map[key],
+                anchor=html.escape(anchor_map[key]),
                 key=html.escape(key),
                 old=_format_value(diff.changed[key]["old"]),
                 new=_format_value(diff.changed[key]["new"]),
