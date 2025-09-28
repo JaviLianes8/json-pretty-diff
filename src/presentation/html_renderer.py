@@ -266,29 +266,18 @@ def render_html(diff: DiffResult) -> str:
         f'<li><a href="#diff-{html.escape(anchor_map[key])}"><code>{html.escape(key)}</code></a></li>'
         for key in removed_keys
     )
-    changed_items_parts: List[str] = []
-    for key in changed_keys:
-        anchor = html.escape(anchor_map[key])
-        key_label = html.escape(key)
-        old_value = _format_value(diff.changed[key]["old"])
-        new_value = _format_value(diff.changed[key]["new"])
-        changed_items_parts.append(
-            "".join(
-                [
-                    "<li>",
-                    f'<a href="#diff-{anchor}" class="change-link">',
-                    f'<span class="change-key"><code>{key_label}</code></span>',
-                    (
-                        '<span class="change-values">'
-                        f"<code>{old_value}</code> → <code>{new_value}</code>"
-                        "</span>"
-                    ),
-                    "</a>",
-                    "</li>",
-                ]
-            )
+    changed_items = "".join(
+        "".join(
+            [
+                "<li>",
+                f'<a href="#diff-{html.escape(anchor_map[key])}" class="change-link">',
+                f'<span class="change-key"><code>{html.escape(key)}</code></span>',
+                "</a>",
+                "</li>",
+            ]
         )
-    changed_items = "".join(changed_items_parts)
+        for key in changed_keys
+    )
 
     render_section("Added", "added", added_items)
     render_section("Removed", "removed", removed_items)
