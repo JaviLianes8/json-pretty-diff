@@ -83,14 +83,3 @@ class JsonPrettyDiffCLI:
         """Writes an error message to stderr."""
 
         sys.stderr.write(f"Error: {message}\n")
-
-
-def main() -> int:
-    """Module entry point used by setuptools."""
-
-    cli = JsonPrettyDiffCLI()
-    return cli.run()
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
