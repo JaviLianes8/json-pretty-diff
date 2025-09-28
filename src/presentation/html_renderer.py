@@ -336,7 +336,7 @@ def _render_summary_panel(diff: DiffResult, anchor_map: Dict[str, str]) -> str:
     panel_parts = [
         '<section class="summary-panel">',
         '<details class="panel-toggle summary-toggle" open>',
-        '<summary>Summary</summary>',
+        '<summary>SUMMARY</summary>',
         '<div class="summary-body">',
         '<div class="summary-grid">',
         summary_cards,
