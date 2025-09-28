@@ -4,7 +4,7 @@ import html
 import json
 from typing import Any
 
-from jpd.domain.models import DiffResult
+from domain.models import DiffResult
 
 
 def _format_value(value: Any) -> str:

@@ -2,8 +2,8 @@
 
 from typing import Any, Dict
 
-from jpd.domain.models import DiffResult
-from jpd.domain.services import compute_top_level_diff
+from domain.models import DiffResult
+from domain.services import compute_top_level_diff
 
 
 class DiffUseCase:
