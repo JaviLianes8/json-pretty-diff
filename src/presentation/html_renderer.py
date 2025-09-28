@@ -79,10 +79,10 @@ def _render_diff_lines(lines: Iterable[str], truncated: bool) -> str:
     rendered: List[str] = []
     for line in lines:
         escaped = html.escape(line)
-        if line.startswith("+++") or line.startswith("---"):
-            css_class = "ctx"
-        elif line.startswith("@@"):
+        if line.startswith("@@"):
             css_class = "hunk"
+        elif line.startswith("+++") or line.startswith("---"):
+            css_class = "ctx"
         elif line.startswith("+"):
             css_class = "add"
         elif line.startswith("-"):
@@ -202,8 +202,11 @@ def _render_diff_section(entry: Dict[str, Any]) -> str:
     old_lines = old_serialized.splitlines(keepends=True)
     new_lines = new_serialized.splitlines(keepends=True)
     diff_lines = _diff_lines(old_lines, new_lines)
+    cleaned_lines = list(diff_lines)
+    if len(cleaned_lines) >= 2 and cleaned_lines[0].startswith("---") and cleaned_lines[1].startswith("+++"):
+        cleaned_lines = cleaned_lines[2:]
 
-    diff_html = _render_diff_lines(diff_lines, truncated_old or truncated_new)
+    diff_html = _render_diff_lines(cleaned_lines, truncated_old or truncated_new)
 
     return "\n".join(
         [
@@ -263,10 +266,89 @@ def _render_git_sections(entries: List[Dict[str, Any]]) -> str:
         return ""
 
     parts: List[str] = ['<section class="gitdiff-container">', '<h2>Diff</h2>']
+    parts.extend(
+        [
+            '<pre class="gitdiff gitdiff-legend">',
+            '<span class="ctx">--- old</span>',
+            '<span class="ctx">+++ new</span>',
+            '</pre>',
+        ]
+    )
 
     parts.extend(_render_diff_section(entry) for entry in entries)
     parts.append("</section>")
     return "\n".join(parts)
+
+
+def _render_summary_card(title: str, css_class: str, items_html: str) -> str:
+    """Renders an individual summary card with its entries."""
+
+    parts = [f'<div class="summary-card {css_class}">', f"<h3>{title}</h3>"]
+    if items_html:
+        parts.extend(['<ul class="summary-list">', items_html, '</ul>'])
+    else:
+        parts.append('<p class="empty">No entries.</p>')
+    parts.append('</div>')
+    return "\n".join(parts)
+
+
+def _render_summary_panel(diff: DiffResult, anchor_map: Dict[str, str]) -> str:
+    """Builds the summary panel grouping added, removed and changed keys."""
+
+    added_keys = list(diff.added)
+    removed_keys = list(diff.removed)
+    changed_keys = sorted(diff.changed)
+
+    added_items = "".join(
+        f'<li><a href="#diff-{html.escape(anchor_map[key])}"><code>{html.escape(key)}</code></a></li>'
+        for key in added_keys
+    )
+    removed_items = "".join(
+        f'<li><a href="#diff-{html.escape(anchor_map[key])}"><code>{html.escape(key)}</code></a></li>'
+        for key in removed_keys
+    )
+    changed_items = "".join(
+        "".join(
+            [
+                "<li>",
+                f'<a href="#diff-{html.escape(anchor_map[key])}" class="change-link">',
+                f'<span class="change-key"><code>{html.escape(key)}</code></span>',
+                "</a>",
+                "</li>",
+            ]
+        )
+        for key in changed_keys
+    )
+
+    summary_cards = "\n".join(
+        [
+            _render_summary_card("Added", "added", added_items),
+            _render_summary_card("Removed", "removed", removed_items),
+            _render_summary_card("Changed", "changed", changed_items),
+        ]
+    )
+
+    summary_counts = (
+        "Added: {added}&nbsp;·&nbsp;Removed: {removed}&nbsp;·&nbsp;Changed: {changed}"
+    ).format(
+        added=len(diff.added),
+        removed=len(diff.removed),
+        changed=len(diff.changed),
+    )
+
+    panel_parts = [
+        '<section class="summary-panel">',
+        '<div class="summary-header"><h2>JSON Pretty Diff</h2></div>',
+        '<div class="summary-grid">',
+        summary_cards,
+        '</div>',
+    ]
+
+    if not diff.has_differences:
+        panel_parts.append('<p class="empty-state">No differences.</p>')
+
+    panel_parts.extend(['<footer class="summary-footer">', summary_counts, '</footer>', '</section>'])
+    return "\n".join(panel_parts)
 
 
 def render_html(diff: DiffResult) -> str:
@@ -279,9 +361,6 @@ def render_html(diff: DiffResult) -> str:
         section h2 { margin-top: 0; color: #0f172a; }
         section ul { margin: 0; padding-left: 1.5rem; }
         section.empty { color: #64748b; font-style: italic; background: #f1f5f9; border-style: dashed; }
-        section.added { border-color: #22c55e; background: #ecfdf5; }
-        section.removed { border-color: #ef4444; background: #fef2f2; }
-        section.changed { border-color: #f97316; background: #fff7ed; }
         footer { font-weight: bold; margin-top: 2rem; color: #0f172a; }
         code {
             font-family: "Fira Code", "Courier New", monospace;
@@ -291,8 +370,23 @@ def render_html(diff: DiffResult) -> str:
         }
         a { color: #2563eb; text-decoration: none; }
         a:hover { color: #1d4ed8; text-decoration: none; }
+        .summary-panel { padding: 1.75rem; border: 2px solid #cbd5f5; border-radius: 20px; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(226, 232, 240, 0.5), rgba(255, 255, 255, 0.95)); box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1); }
+        .summary-header h2 { margin: 0; text-transform: uppercase; letter-spacing: 0.04em; color: #1e293b; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-top: 1.25rem; }
+        .summary-card { border: 2px solid #cbd5f5; border-radius: 16px; padding: 1rem 1.25rem; background: #ffffff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .summary-card:hover { transform: translateY(-2px); box-shadow: 0 12px 22px rgba(15, 23, 42, 0.12); }
+        .summary-card.added { border-color: #22c55e; background: linear-gradient(135deg, rgba(187, 247, 208, 0.65), rgba(255, 255, 255, 0.95)); }
+        .summary-card.removed { border-color: #ef4444; background: linear-gradient(135deg, rgba(254, 202, 202, 0.65), rgba(255, 255, 255, 0.95)); }
+        .summary-card.changed { border-color: #f97316; background: linear-gradient(135deg, rgba(254, 215, 170, 0.65), rgba(255, 255, 255, 0.95)); }
+        .summary-card h3 { margin-top: 0; margin-bottom: 0.75rem; color: #0f172a; }
+        .summary-list { margin: 0; padding-left: 1.25rem; color: #1e293b; }
+        .summary-card .empty { margin: 0; color: #64748b; font-style: italic; }
+        .summary-footer { margin-top: 1.75rem; text-align: right; font-weight: 600; color: #1e293b; }
+        .empty-state { margin-top: 1.5rem; color: #64748b; font-style: italic; }
         .gitdiff-container { border: 1px solid #cbd5f5; border-radius: 16px; padding: 1.5rem; background: #ffffff; box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12); }
         .gitdiff-container h2 { margin-top: 0; color: #1e293b; }
+        .gitdiff-legend { margin: 0.5rem 0 1rem; border-radius: 10px; background: #f1f5f9; padding: 0.75rem 1rem; display: inline-block; }
+        .gitdiff-legend span { display: block; font-weight: 600; color: #475569; }
         .gitdiff-block { border: 1px solid #cbd5f5; border-radius: 12px; padding: 1rem 1.25rem; background: linear-gradient(135deg, rgba(224, 231, 255, 0.65), rgba(255, 255, 255, 0.95)); margin-top: 1rem; }
         .gitdiff-block.added { border-color: #22c55e; background: linear-gradient(135deg, rgba(187, 247, 208, 0.7), rgba(236, 253, 245, 0.95)); }
         .gitdiff-block.removed { border-color: #ef4444; background: linear-gradient(135deg, rgba(254, 202, 202, 0.7), rgba(254, 242, 242, 0.95)); }
@@ -323,7 +417,7 @@ def render_html(diff: DiffResult) -> str:
         .full-json-table .code-cell { border-top: 1px solid #e2e8f0; background: #f8fafc; }
         .full-json-table .code-cell.ctx { color: #0f172a; }
         .full-json-table .code-cell.del { background: #fee2e2; color: #991b1b; }
-        .full-json-table .code-cell.mix { background: #ffe4e6; color: #be123c; }
+        .full-json-table .code-cell.mix { background: #ffedd5; color: #c2410c; }
         .full-json-table .code-cell.empty { color: #cbd5f5; }
     </style>
     """.strip()
@@ -341,63 +435,14 @@ def render_html(diff: DiffResult) -> str:
         "<h1>JSON Pretty Diff</h1>",
     ]
 
-    def render_section(title: str, css_class: str, items: str) -> None:
-        classes = f"{css_class} empty" if not items else css_class
-        html_parts.append(f'<section class="{classes}">')
-        html_parts.append(f"<h2>{title}</h2>")
-        if items:
-            html_parts.append("<ul>")
-            html_parts.append(items)
-            html_parts.append("</ul>")
-        else:
-            html_parts.append("<p>No entries.</p>")
-        html_parts.append("</section>")
-
-    added_keys = list(diff.added)
-    removed_keys = list(diff.removed)
-    changed_keys = sorted(diff.changed)
-
     used_anchors: Dict[str, int] = {}
     anchor_map: Dict[str, str] = {}
-    for key in added_keys + removed_keys + changed_keys:
+    for key in list(diff.added) + list(diff.removed) + sorted(diff.changed):
         if key not in anchor_map:
             anchor_map[key] = _sanitize_anchor(key, used_anchors)
 
-    added_items = "".join(
-        f'<li><a href="#diff-{html.escape(anchor_map[key])}"><code>{html.escape(key)}</code></a></li>'
-        for key in added_keys
-    )
-    removed_items = "".join(
-        f'<li><a href="#diff-{html.escape(anchor_map[key])}"><code>{html.escape(key)}</code></a></li>'
-        for key in removed_keys
-    )
-    changed_items = "".join(
-        "".join(
-            [
-                "<li>",
-                f'<a href="#diff-{html.escape(anchor_map[key])}" class="change-link">',
-                f'<span class="change-key"><code>{html.escape(key)}</code></span>',
-                "</a>",
-                "</li>",
-            ]
-        )
-        for key in changed_keys
-    )
-
-    render_section("Added", "added", added_items)
-    render_section("Removed", "removed", removed_items)
-    render_section("Changed", "changed", changed_items)
-
-    summary = (
-        "Added: {added}&nbsp;·&nbsp;Removed: {removed}&nbsp;·&nbsp;Changed: {changed}"
-    ).format(
-        added=len(diff.added),
-        removed=len(diff.removed),
-        changed=len(diff.changed),
-    )
-    if not diff.has_differences:
-        html_parts.append("<p>No differences.</p>")
-    html_parts.append(f"<footer>{summary}</footer>")
+    summary_panel = _render_summary_panel(diff, anchor_map)
+    html_parts.append(summary_panel)
 
     git_entries = _build_git_entries(diff, anchor_map)
     git_sections = _render_git_sections(git_entries)
