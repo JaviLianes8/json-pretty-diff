@@ -2,7 +2,7 @@
 import html
 import json
 from difflib import SequenceMatcher, unified_diff
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from domain.models import DiffResult
 
@@ -37,13 +37,14 @@ def _truncate_text(value: str, limit: int = 10_000) -> Tuple[str, bool]:
     return value[:limit], True
 
 
-def _prepare_serialized_for_diff(value: Any) -> Tuple[str, bool]:
+def _prepare_serialized_for_diff(value: Any) -> Tuple[str, bool, str]:
     """Serializes and truncates a value for diff visualization."""
 
     if value is _MISSING:
-        return "", False
+        return "", False, ""
     serialized = _serialize_for_diff(value)
-    return _truncate_text(serialized)
+    truncated, was_truncated = _truncate_text(serialized)
+    return truncated, was_truncated, serialized
 
 
 def _diff_lines(old: Iterable[str], new: Iterable[str]) -> List[str]:
@@ -185,6 +186,54 @@ def _render_full_json_section(diff: DiffResult) -> str:
     )
 
 
+def _render_truncated_details(
+    old_full: Optional[str], new_full: Optional[str]
+) -> str:
+    """Creates the expandable panel with the full payload when truncated."""
+
+    if old_full is None and new_full is None:
+        return ""
+
+    columns: List[str] = []
+    if old_full is not None:
+        columns.append(
+            "".join(
+                [
+                    '<div class="truncated-column">',
+                    '<h4 class="truncated-title">Old value</h4>',
+                    f'<pre>{html.escape(old_full)}</pre>',
+                    "</div>",
+                ]
+            )
+        )
+
+    if new_full is not None:
+        columns.append(
+            "".join(
+                [
+                    '<div class="truncated-column">',
+                    '<h4 class="truncated-title">New value</h4>',
+                    f'<pre>{html.escape(new_full)}</pre>',
+                    "</div>",
+                ]
+            )
+        )
+
+    if not columns:
+        return ""
+
+    return "".join(
+        [
+            '<details class="truncated-details">',
+            '<summary>Show full content</summary>',
+            '<div class="truncated-wrapper">',
+            "".join(columns),
+            "</div>",
+            "</details>",
+        ]
+    )
+
+
 def _render_diff_section(entry: Dict[str, Any]) -> str:
     """Builds the HTML section containing the formatted diff for a key."""
 
@@ -192,8 +241,8 @@ def _render_diff_section(entry: Dict[str, Any]) -> str:
     anchor = entry["anchor"]
     status = entry["status"]
 
-    old_serialized, truncated_old = _prepare_serialized_for_diff(entry["old"])
-    new_serialized, truncated_new = _prepare_serialized_for_diff(entry["new"])
+    old_serialized, truncated_old, old_full = _prepare_serialized_for_diff(entry["old"])
+    new_serialized, truncated_new, new_full = _prepare_serialized_for_diff(entry["new"])
 
     old_lines = old_serialized.splitlines(keepends=True)
     new_lines = new_serialized.splitlines(keepends=True)
@@ -204,14 +253,25 @@ def _render_diff_section(entry: Dict[str, Any]) -> str:
 
     diff_html = _render_diff_lines(cleaned_lines, truncated_old or truncated_new)
 
-    return "\n".join(
-        [
-            f'<section id="diff-{anchor}" class="gitdiff-block {status}">',
-            f"<h3><code>{html.escape(key)}</code></h3>",
-            f'<pre class="gitdiff">{diff_html}</pre>',
-            "</section>",
-        ]
-    )
+    truncated_panel = ""
+    if truncated_old or truncated_new:
+        truncated_panel = _render_truncated_details(
+            old_full if truncated_old else None,
+            new_full if truncated_new else None,
+        )
+
+    section_parts = [
+        f'<section id="diff-{anchor}" class="gitdiff-block {status}">',
+        f"<h3><code>{html.escape(key)}</code></h3>",
+        f'<pre class="gitdiff">{diff_html}</pre>',
+    ]
+
+    if truncated_panel:
+        section_parts.append(truncated_panel)
+
+    section_parts.append("</section>")
+
+    return "\n".join(section_parts)
 
 
 def _build_git_entries(diff: DiffResult, anchors: Dict[str, str]) -> List[Dict[str, Any]]:
@@ -413,6 +473,14 @@ def render_html(diff: DiffResult) -> str:
         .change-link:hover code { color: inherit; }
         .gitdiff-container a { color: inherit; text-decoration: none; }
         .gitdiff-container a:hover { color: inherit; text-decoration: none; }
+        .truncated-details { margin-top: 1rem; display: block; }
+        .truncated-details summary { list-style: none; font-weight: 600; cursor: pointer; color: #1e293b; }
+        .truncated-details summary::marker { display: none; }
+        .truncated-details summary::-webkit-details-marker { display: none; }
+        .truncated-wrapper { margin-top: 0.75rem; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+        .truncated-column { border: 1px solid #cbd5f5; border-radius: 12px; background: #f8fafc; padding: 0.75rem; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5); }
+        .truncated-title { margin: 0 0 0.5rem; font-size: 0.95rem; color: #0f172a; }
+        .truncated-column pre { margin: 0; font-family: "Fira Code", "Courier New", monospace; white-space: pre-wrap; word-break: break-word; color: #0f172a; }
         .full-json-section { border: 1px solid #cbd5f5; border-radius: 16px; padding: 1.5rem; background: #ffffff; box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12); }
         .full-json-details summary { color: #1e293b; }
         .full-json-details summary:focus { outline: none; }
