@@ -4,11 +4,12 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from textwrap import dedent
 from typing import Any, Dict, Sequence
 
-from application.use_cases import DiffUseCase
-from presentation.html_renderer import render_html
-from version import __version__
+from ..application.use_cases import DiffUseCase
+from ..presentation.html_renderer import render_html
+from ..version import __version__
 
 
 class JsonPrettyDiffCLI:
@@ -17,9 +18,22 @@ class JsonPrettyDiffCLI:
     def __init__(self) -> None:
         """Initializes the CLI parser."""
 
+        description = dedent(
+            """
+            Generate an HTML diff between two JSON files.
+
+            Quick start after running `pip install json-pretty-diff`:
+              1. Pick the original JSON document as the source file.
+              2. Pick the updated JSON document as the target file.
+              3. Execute `jpd source.json target.json -o diff.html`.
+              4. Open `diff.html` in your browser to review the styled report.
+            """
+        ).strip()
+
         self._parser = argparse.ArgumentParser(
             prog="jpd",
-            description="Generate an HTML diff between two JSON files.",
+            description=description,
+            formatter_class=argparse.RawDescriptionHelpFormatter,
         )
         self._parser.add_argument(
             "--version",
@@ -32,6 +46,9 @@ class JsonPrettyDiffCLI:
             "-o",
             "--output",
             help="Path to the output HTML file. When omitted, the HTML is sent to stdout.",
+        )
+        self._parser.epilog = (
+            "When `--output` is omitted, redirect the standard output to a file with `>` if you want to keep the report."
         )
         self._use_case = DiffUseCase()
 

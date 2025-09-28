@@ -4,11 +4,62 @@ import json
 from difflib import SequenceMatcher, unified_diff
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from domain.models import DiffResult
+from ..domain.models import DiffResult
 
 
 _MISSING = object()
 FULL_JSON_TABLE_ID = "full-json-table"
+
+SOCIAL_LINKS = [
+    (
+        "LinkedIn",
+        "https://www.linkedin.com/in/jlianes/",
+        "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg",
+    ),
+    (
+        "GitHub",
+        "https://github.com/JaviLianes8/json-pretty-diff",
+        "https://cdn.simpleicons.org/github/181717",
+    ),
+    (
+        "Buy Me a Coffee",
+        "https://buymeacoffee.com/jlianesglrs",
+        "https://cdn.simpleicons.org/buymeacoffee/FFDD00",
+    ),
+]
+
+
+def _render_branding_header() -> str:
+    """Renders the social navigation and signature banner."""
+
+    links = []
+    for label, href, icon in SOCIAL_LINKS:
+        links.append(
+            (
+                '<a class="branding__link" '
+                f'href="{html.escape(href, quote=True)}" '
+                'target="_blank" '
+                'rel="noopener noreferrer" '
+                f'aria-label="{html.escape(label, quote=True)}">'
+                f'<img src="{html.escape(icon, quote=True)}" alt="{html.escape(label)} icon" '
+                'width="32" height="32" loading="lazy" />'
+                "</a>"
+            )
+        )
+
+    return "\n".join(
+        [
+            '<header class="branding">',
+            f"<div class=\"branding__links\">{''.join(links)}</div>",
+            (
+                '<p class="branding__signature">'
+                'Made with love by Javier Lianes García in Aranjuez '
+                '<span class="branding__heart" role="img" aria-label="love">❤️</span>'
+                '</p>'
+            ),
+            '</header>',
+        ]
+    )
 
 
 def _format_value(value: Any) -> str:
@@ -621,6 +672,12 @@ def render_html(diff: DiffResult) -> str:
     styles = """
     <style>
         body { font-family: Arial, sans-serif; margin: 2rem; background: #f8fafc; color: #0f172a; }
+        .branding { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin: 1.5rem 0 2rem; }
+        .branding__links { display: flex; gap: 0.9rem; }
+        .branding__link img { border-radius: 50%; box-shadow: 0 6px 12px rgba(15, 23, 42, 0.18); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .branding__link:hover img { transform: translateY(-2px) scale(1.05); box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25); }
+        .branding__signature { margin: 0; font-weight: 500; color: #1e293b; }
+        .branding__heart { color: #ef4444; margin-left: 0.35rem; }
         section { padding: 1rem; border: 1px solid #cbd5f5; border-radius: 12px; margin-bottom: 1.5rem; background: #ffffff; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); }
         section h2 { margin-top: 0; color: #0f172a; }
         section ul { margin: 0; padding-left: 1.5rem; }
@@ -730,6 +787,7 @@ def render_html(diff: DiffResult) -> str:
         styles,
         "</head>",
         "<body>",
+        _render_branding_header(),
         "<h1>JSON Pretty Diff</h1>",
     ]
 

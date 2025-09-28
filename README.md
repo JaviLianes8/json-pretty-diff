@@ -1,9 +1,30 @@
 # json-pretty-diff
 
-## Purpose
+<p align="center">
+  <a href="https://www.linkedin.com/in/jlianes/" target="_blank" rel="noopener noreferrer"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" alt="LinkedIn" height="36" width="36" /></a>
+  <a href="https://github.com/JaviLianes8/json-pretty-diff" target="_blank" rel="noopener noreferrer"><img src="https://cdn.simpleicons.org/github/181717" alt="GitHub" height="36" width="36" /></a>
+  <a href="https://buymeacoffee.com/jlianesglrs" target="_blank" rel="noopener noreferrer"><img src="https://cdn.simpleicons.org/buymeacoffee/FFDD00" alt="Buy Me a Coffee" height="36" width="36" /></a>
+</p>
+<p align="center">Made with love by Javier Lianes García in Aranjuez ❤️</p>
+
+## Overview
 Generate a clean HTML report that summarizes the top-level differences between two JSON files. The report groups keys into Added, Removed, and Changed sections to make the impact of the updates easy to scan.
 
-## Local installation
+## Installation
+
+### From PyPI (recommended)
+1. Ensure Python 3.9 or newer is available on your system.
+2. Install the package:
+   ```bash
+   pip install json-pretty-diff
+   ```
+3. Run the CLI to compare two JSON files:
+   ```bash
+   jpd original.json updated.json -o diff.html
+   ```
+4. Open `diff.html` in your browser to explore the report.
+
+### From source
 1. Clone this repository.
 2. Install the package in editable mode:
    ```bash

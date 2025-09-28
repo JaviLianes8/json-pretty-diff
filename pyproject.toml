@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "json-pretty-diff"
 version = "0.1.0"
 description = "HTML-only diff generator for top-level JSON objects"
-authors = [{ name = "JSON Pretty Diff" }]
+authors = [{ name = "Javier Lianes García" }]
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
@@ -15,12 +15,21 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = []
+keywords = ["json", "diff", "html", "cli", "report"]
+
+[project.urls]
+Homepage = "https://github.com/JaviLianes8/json-pretty-diff"
+Documentation = "https://github.com/JaviLianes8/json-pretty-diff#readme"
+"Bug Tracker" = "https://github.com/JaviLianes8/json-pretty-diff/issues"
+LinkedIn = "https://www.linkedin.com/in/jlianes/"
+Funding = "https://buymeacoffee.com/jlianesglrs"
 
 [project.scripts]
-jpd = "main:main"
+jpd = "json_pretty_diff.cli:main"
 
 [tool.setuptools]
-py-modules = ["main"]
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["json_pretty_diff*"]
