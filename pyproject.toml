@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "json-pretty-diff"
-version = "0.1.0"
+version = "0.1.1"
 description = "HTML-only diff generator for top-level JSON objects"
 authors = [{ name = "Javier Lianes García" }]
 readme = "README.md"
