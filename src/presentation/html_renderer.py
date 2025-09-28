@@ -121,19 +121,15 @@ def _build_side_by_side_rows(old_lines: List[str], new_lines: List[str]) -> str:
             old_line = old_chunk[index] if index < len(old_chunk) else ""
             new_line = new_chunk[index] if index < len(new_chunk) else ""
 
-            if tag == "equal":
-                old_class = new_class = "ctx"
-            elif tag == "replace":
-                old_class = "del"
-                new_class = "mix"
+            left_class = "left"
+            if tag == "replace":
+                right_class = "diff-modified"
             elif tag == "delete":
-                old_class = "del"
-                new_class = "empty"
+                right_class = "diff-removed"
             elif tag == "insert":
-                old_class = "empty"
-                new_class = "mix"
+                right_class = "diff-added"
             else:
-                old_class = new_class = "ctx"
+                right_class = "neutral"
 
             old_cell = html.escape(old_line) if old_line else "&nbsp;"
             new_cell = html.escape(new_line) if new_line else "&nbsp;"
@@ -142,8 +138,8 @@ def _build_side_by_side_rows(old_lines: List[str], new_lines: List[str]) -> str:
                 "".join(
                     [
                         "<tr>",
-                        f'<td class="code-cell {old_class}"><pre>{old_cell}</pre></td>',
-                        f'<td class="code-cell {new_class}"><pre>{new_cell}</pre></td>',
+                        f'<td class="code-cell {left_class}"><pre>{old_cell}</pre></td>',
+                        f'<td class="code-cell {right_class}"><pre>{new_cell}</pre></td>',
                         "</tr>",
                     ]
                 )
@@ -174,8 +170,8 @@ def _render_full_json_section(diff: DiffResult) -> str:
             '<table class="full-json-table">',
             "<thead>",
             "<tr>",
-            "<th>Old JSON pretty print</th>",
-            "<th>New JSON pretty print</th>",
+            "<th>Old JSON</th>",
+            "<th>New JSON</th>",
             "</tr>",
             "</thead>",
             "<tbody>",
@@ -284,12 +280,12 @@ def _render_git_sections(entries: List[Dict[str, Any]]) -> str:
 def _render_summary_card(title: str, css_class: str, items_html: str) -> str:
     """Renders an individual summary card with its entries."""
 
-    parts = [f'<details class="summary-card {css_class}" open>', f"<summary>{title}</summary>"]
+    parts = [f'<div class="summary-card {css_class}">', f'<h4 class="summary-title">{title}</h4>']
     if items_html:
         parts.extend(['<ul class="summary-list">', items_html, '</ul>'])
     else:
         parts.append('<p class="empty">No entries.</p>')
-    parts.append('</details>')
+    parts.append('</div>')
     return "\n".join(parts)
 
 
@@ -340,7 +336,7 @@ def _render_summary_panel(diff: DiffResult, anchor_map: Dict[str, str]) -> str:
     panel_parts = [
         '<section class="summary-panel">',
         '<details class="panel-toggle summary-toggle" open>',
-        '<summary>Summary</summary>',
+        '<summary>SUMMARY</summary>',
         '<div class="summary-body">',
         '<div class="summary-grid">',
         summary_cards,
@@ -389,14 +385,8 @@ def render_html(diff: DiffResult) -> str:
         .summary-card.added { border-color: #22c55e; background: linear-gradient(135deg, rgba(187, 247, 208, 0.65), rgba(255, 255, 255, 0.95)); }
         .summary-card.removed { border-color: #ef4444; background: linear-gradient(135deg, rgba(254, 202, 202, 0.65), rgba(255, 255, 255, 0.95)); }
         .summary-card.changed { border-color: #f97316; background: linear-gradient(135deg, rgba(254, 215, 170, 0.65), rgba(255, 255, 255, 0.95)); }
-        .summary-card summary { list-style: none; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 1.05rem; margin: 0; color: #0f172a; cursor: pointer; }
-        .summary-card summary::after { content: "−"; font-size: 1.25rem; line-height: 1; color: #475569; }
-        .summary-card:not([open]) summary::after { content: "+"; }
-        .summary-card summary::marker { display: none; }
-        .summary-card summary::-webkit-details-marker { display: none; }
-        .summary-card[open] summary { margin-bottom: 0.75rem; }
+        .summary-title { margin: 0 0 0.75rem; font-weight: 600; font-size: 1.05rem; color: #0f172a; }
         .summary-list { margin: 0; padding-left: 1.25rem; color: #1e293b; }
-        .summary-card:not([open]) .summary-list, .summary-card:not([open]) .empty { display: none; }
         .summary-card .empty { margin: 0; color: #64748b; font-style: italic; }
         .summary-footer { margin-top: 1.75rem; text-align: right; font-weight: 600; color: #1e293b; }
         .empty-state { margin-top: 1.5rem; color: #64748b; font-style: italic; }
@@ -432,11 +422,12 @@ def render_html(diff: DiffResult) -> str:
         .full-json-table th { text-align: left; padding: 0.75rem; background: #e2e8f0; color: #0f172a; }
         .full-json-table td { padding: 0; vertical-align: top; }
         .full-json-table td pre { margin: 0; padding: 0.5rem 0.75rem; font-family: "Fira Code", "Courier New", monospace; white-space: pre; background: transparent; color: inherit; }
-        .full-json-table .code-cell { border-top: 1px solid #e2e8f0; background: #f8fafc; }
-        .full-json-table .code-cell.ctx { color: #0f172a; }
-        .full-json-table .code-cell.del { background: #fee2e2; color: #991b1b; }
-        .full-json-table .code-cell.mix { background: #ffedd5; color: #c2410c; }
-        .full-json-table .code-cell.empty { color: #cbd5f5; }
+        .full-json-table .code-cell { border-top: 1px solid #e2e8f0; background: #ffffff; color: #0f172a; }
+        .full-json-table .code-cell.left { background: #ffffff; }
+        .full-json-table .code-cell.neutral { background: #ffffff; }
+        .full-json-table .code-cell.diff-added { background: #dcfce7; color: #14532d; }
+        .full-json-table .code-cell.diff-modified { background: #ffedd5; color: #9a3412; }
+        .full-json-table .code-cell.diff-removed { background: #fee2e2; color: #991b1b; }
     </style>
     """.strip()
 
