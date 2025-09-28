@@ -293,6 +293,7 @@ def _render_full_json_filter_script(table_id: str) -> str:
     var summary = document.querySelector('[data-json-filter-summary][data-json-target="{table_id}"]');
     var prevButton = document.querySelector('[data-json-filter-prev][data-json-target="{table_id}"]');
     var nextButton = document.querySelector('[data-json-filter-next][data-json-target="{table_id}"]');
+    var filterContainer = filterInput.closest('.full-json-filter');
     var matches = [];
     var activeIndex = -1;
     var currentQuery = '';
@@ -327,6 +328,36 @@ def _render_full_json_filter_script(table_id: str) -> str:
         return {{ html: result, count: count }};
     }}
 
+    function ensureMatchVisible(target) {{
+        if (!target) {{
+            return;
+        }}
+        if (!filterContainer) {{
+            target.scrollIntoView({{ behavior: 'smooth', block: 'center', inline: 'nearest' }});
+            return;
+        }}
+
+        var spacer = 16; // Match the 1rem top offset applied via CSS.
+        var filterRect = filterContainer.getBoundingClientRect();
+        var offset;
+
+        if (filterRect.top <= spacer) {{
+            offset = filterRect.bottom + spacer;
+        }} else {{
+            offset = filterRect.top + filterRect.height + spacer;
+        }}
+
+        var targetRect = target.getBoundingClientRect();
+        var absoluteTop = window.scrollY + targetRect.top;
+        var desiredTop = Math.max(absoluteTop - offset, 0);
+
+        if (typeof window.scrollTo === 'function') {{
+            window.scrollTo({{ top: desiredTop, behavior: 'smooth' }});
+        }} else {{
+            window.scroll(0, desiredTop);
+        }}
+    }}
+
     function setActiveMatch(index) {{
         if (!matches.length) {{
             activeIndex = -1;
@@ -338,7 +369,7 @@ def _render_full_json_filter_script(table_id: str) -> str:
         var target = matches[index];
         if (target) {{
             target.classList.add('full-json-highlight--active');
-            target.scrollIntoView({{ behavior: 'smooth', block: 'center', inline: 'nearest' }});
+            ensureMatchVisible(target);
             activeIndex = index;
         }}
     }}
