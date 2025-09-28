@@ -19,13 +19,13 @@ def _ensure_src_on_path() -> None:
 
 _ensure_src_on_path()
 
-from json_pretty_diff.cli import main as cli_main  # noqa: E402  (import after path setup)
+from json_pretty_diff.infrastructure.cli import JsonPrettyDiffCLI  # noqa: E402  (import after path setup)
 
 
 def main() -> int:
     """Runs the JSON Pretty Diff command-line interface."""
 
-    return cli_main()
+    return JsonPrettyDiffCLI().run()
 
 
 if __name__ == "__main__":

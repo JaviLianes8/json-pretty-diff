@@ -1,8 +1,7 @@
 # json-pretty-diff
 
-<p align="center"><strong>Made by me</strong></p>
 <p align="center">
-  <a href="https://www.linkedin.com/in/jlianes/" target="_blank" rel="noopener noreferrer"><img src="https://cdn.simpleicons.org/linkedin/0A66C2" alt="LinkedIn" height="36" width="36" /></a>
+  <a href="https://www.linkedin.com/in/jlianes/" target="_blank" rel="noopener noreferrer"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" alt="LinkedIn" height="36" width="36" /></a>
   <a href="https://github.com/JaviLianes8/json-pretty-diff" target="_blank" rel="noopener noreferrer"><img src="https://cdn.simpleicons.org/github/181717" alt="GitHub" height="36" width="36" /></a>
   <a href="https://buymeacoffee.com/jlianesglrs" target="_blank" rel="noopener noreferrer"><img src="https://cdn.simpleicons.org/buymeacoffee/FFDD00" alt="Buy Me a Coffee" height="36" width="36" /></a>
 </p>

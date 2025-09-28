@@ -14,7 +14,7 @@ SOCIAL_LINKS = [
     (
         "LinkedIn",
         "https://www.linkedin.com/in/jlianes/",
-        "https://cdn.simpleicons.org/linkedin/0A66C2",
+        "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg",
     ),
     (
         "GitHub",
@@ -50,7 +50,6 @@ def _render_branding_header() -> str:
     return "\n".join(
         [
             '<header class="branding">',
-            '<p class="branding__title">Made by me</p>',
             f"<div class=\"branding__links\">{''.join(links)}</div>",
             (
                 '<p class="branding__signature">'
@@ -674,7 +673,6 @@ def render_html(diff: DiffResult) -> str:
     <style>
         body { font-family: Arial, sans-serif; margin: 2rem; background: #f8fafc; color: #0f172a; }
         .branding { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin: 1.5rem 0 2rem; }
-        .branding__title { margin: 0; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #1d4ed8; }
         .branding__links { display: flex; gap: 0.9rem; }
         .branding__link img { border-radius: 50%; box-shadow: 0 6px 12px rgba(15, 23, 42, 0.18); transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .branding__link:hover img { transform: translateY(-2px) scale(1.05); box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25); }
