@@ -10,6 +10,8 @@ class DiffResult:
     added: List[str] = field(default_factory=list)
     removed: List[str] = field(default_factory=list)
     changed: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    added_values: Dict[str, Any] = field(default_factory=dict)
+    removed_values: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def has_differences(self) -> bool:
