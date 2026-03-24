@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Dict
 
 from ...domain.models import DiffResult
+from ...version import __version__
 from ._anchors import sanitize_anchor
 from ._branding import render_branding_header
 from ._diff_data import build_git_entries
@@ -13,7 +15,7 @@ from ._full_json import FULL_JSON_TABLE_ID, render_full_json_section
 from ._full_json_script import render_full_json_filter_script
 from ._summary import render_summary_panel
 
-def render_html(diff: DiffResult) -> str:
+def render_html(diff: DiffResult, *, include_styles: bool = True) -> str:
     """Builds the complete HTML report for a diff result."""
 
     styles = """
@@ -136,6 +138,8 @@ def render_html(diff: DiffResult) -> str:
     </style>
     """.strip()
 
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
     html_parts = [
         "<!DOCTYPE html>",
         '<html lang="en">',
@@ -143,11 +147,12 @@ def render_html(diff: DiffResult) -> str:
         '<meta charset="utf-8" />',
         '<meta name="viewport" content="width=device-width, initial-scale=1" />',
         "<title>JSON Pretty Diff</title>",
-        styles,
+        styles if include_styles else "",
         "</head>",
         "<body>",
         render_branding_header(),
         "<h1>JSON Pretty Diff</h1>",
+        f'<p style="color: #64748b; font-size: 0.9rem;">Generated on {timestamp} &mdash; v{__version__}</p>',
     ]
 
     used_anchors: Dict[str, int] = {}

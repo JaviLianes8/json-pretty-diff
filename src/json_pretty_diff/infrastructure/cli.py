@@ -3,6 +3,7 @@
 import argparse
 import json
 import sys
+import webbrowser
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict, Sequence
@@ -46,6 +47,22 @@ class JsonPrettyDiffCLI:
             "--output",
             help="Path to the output HTML file. When omitted, the HTML is sent to stdout.",
         )
+        self._parser.add_argument(
+            "--open",
+            action="store_true",
+            help="Open the generated HTML report in the default browser (requires -o).",
+        )
+        self._parser.add_argument(
+            "-q",
+            "--quiet",
+            action="store_true",
+            help="Suppress all output except errors.",
+        )
+        self._parser.add_argument(
+            "--no-style",
+            action="store_true",
+            help="Generate HTML without CSS styles (lighter output).",
+        )
         self._parser.epilog = (
             "When `--output` is omitted, redirect the standard output to a file with `>` if you want to keep the report."
         )
@@ -62,18 +79,30 @@ class JsonPrettyDiffCLI:
         """
 
         args = self._parser.parse_args(argv)
+
+        if args.open and not args.output:
+            self._emit_error("--open requires -o/--output to be specified.")
+            raise SystemExit(2)
+
         source = self._load_json(Path(args.source))
         target = self._load_json(Path(args.target))
 
         diff = self._use_case.execute(source, target)
-        html_report = render_html(diff)
+        html_report = render_html(diff, include_styles=not args.no_style)
 
         if args.output:
-            self._write_output(Path(args.output), html_report)
+            output_path = Path(args.output)
+            self._write_output(output_path, html_report)
+            if not args.quiet:
+                status = "differences found" if diff.has_differences else "no differences"
+                sys.stdout.write(f"Report saved to {output_path} ({status})\n")
+            if args.open:
+                webbrowser.open(output_path.resolve().as_uri())
         else:
-            sys.stdout.write(html_report)
-            if not html_report.endswith("\n"):
-                sys.stdout.write("\n")
+            if not args.quiet:
+                sys.stdout.write(html_report)
+                if not html_report.endswith("\n"):
+                    sys.stdout.write("\n")
 
         return 1 if diff.has_differences else 0
 

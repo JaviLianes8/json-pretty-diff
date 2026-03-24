@@ -7,6 +7,8 @@
 </p>
 <p align="center">Made with love by Javier Lianes García in Aranjuez ❤️</p>
 
+> **Note:** Version 1.0.0 is the final stable release. No further development is planned.
+
 ## Overview
 Generate a clean HTML report that summarizes the top-level differences between two JSON files. The report groups keys into Added, Removed, and Changed sections to make the impact of the updates easy to scan.
 
@@ -36,10 +38,20 @@ Run the command-line tool and point it to the files you want to compare:
 ```bash
 jpd A.json B.json -o diff.html
 ```
-- When `-o` is omitted, the HTML is printed to `stdout` and can be redirected with `>`.
-- Exit code `0`: no differences were detected (an HTML report is still generated showing "No differences").
-- Exit code `1`: differences were found and the HTML describes every change.
-- Exit code `2`: an error occurred (missing file, invalid JSON, or a root element that is not a JSON object) and no HTML report is produced.
+
+### Options
+| Flag | Description |
+|------|-------------|
+| `-o, --output` | Path to the output HTML file. When omitted, HTML is printed to stdout. |
+| `--open` | Open the generated HTML report in the default browser (requires `-o`). |
+| `-q, --quiet` | Suppress all output except errors. |
+| `--no-style` | Generate HTML without CSS styles (lighter output). |
+| `--version` | Show program version and exit. |
+
+### Exit codes
+- `0`: no differences were detected (an HTML report is still generated showing "No differences").
+- `1`: differences were found and the HTML describes every change.
+- `2`: an error occurred (missing file, invalid JSON, or a root element that is not a JSON object) and no HTML report is produced.
 
 ## Example
 ```bash
