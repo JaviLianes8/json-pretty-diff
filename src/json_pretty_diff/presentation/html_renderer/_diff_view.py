@@ -9,11 +9,17 @@ from ._diff_data import diff_lines, prepare_serialized_for_diff
 
 
 def render_diff_lines(lines: Iterable[str], truncated: bool) -> str:
-    """Turns diff lines into HTML spans with contextual classes."""
+    """Turns diff lines into HTML spans with contextual classes.
+
+    Each row is one span that ends with its own line break and nothing sits between the
+    spans: styled, the spans are blocks and any text between them would show as an empty row
+    (1.1.1 did that); unstyled, they are inline and the break inside each keeps one row per
+    line.
+    """
 
     rendered: List[str] = []
     for line in lines:
-        escaped = html.escape(line)
+        escaped = html.escape(line[:-1] if line.endswith("\n") else line)
         if line.startswith("@@"):
             css_class = "hunk"
         elif line.startswith("+++") or line.startswith("---"):
@@ -24,12 +30,12 @@ def render_diff_lines(lines: Iterable[str], truncated: bool) -> str:
             css_class = "del"
         else:
             css_class = "ctx"
-        rendered.append(f'<span class="{css_class}">{escaped}</span>')
+        rendered.append(f'<span class="{css_class}">{escaped}\n</span>')
 
     if truncated:
-        rendered.append('<span class="ctx">… (truncated)</span>')
+        rendered.append('<span class="ctx">… (truncated)\n</span>')
 
-    return "\n".join(rendered)
+    return "".join(rendered)
 
 
 def render_truncated_details(old_full: str | None, new_full: str | None, status: str) -> str:
@@ -152,10 +158,9 @@ def render_git_sections(entries: List[Dict[str, Any]]) -> str:
         '<details class="panel-toggle diff-toggle" open>',
         "<summary>DIFF</summary>",
         '<div class="gitdiff-body">',
-        '<pre class="gitdiff gitdiff-legend">',
-        '<span class="ctx">--- old</span>',
-        '<span class="ctx">+++ new</span>',
-        "</pre>",
+        '<pre class="gitdiff gitdiff-legend">'
+        + render_diff_lines(["--- old", "+++ new"], truncated=False)
+        + "</pre>",
     ]
 
     parts.extend(render_diff_section(entry) for entry in entries)

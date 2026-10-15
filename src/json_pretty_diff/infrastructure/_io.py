@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional, TextIO
+from typing import Any, Dict, List, Optional, TextIO
+
+from ._decode import decode_json
 
 _UTF16_MARKS = (b"\xff\xfe", b"\xfe\xff")
 
@@ -14,8 +16,13 @@ class InputOutputError(Exception):
     """A file could not be read or written; the message follows ``Error:``."""
 
 
-def load_json_object(path: Path) -> Dict[str, Any]:
-    """Reads a UTF-8 JSON file whose root is an object."""
+def load_json_object(path: Path, warnings: Optional[List[str]] = None) -> Dict[str, Any]:
+    """Reads a UTF-8 JSON file whose root is an object.
+
+    What the file holds that RFC 8259 does not allow or advises against (``NaN``, numbers
+    beyond a double, repeated names) is read as Python reads it and, when ``warnings`` is
+    given, described there, one message per kind, each starting with the path.
+    """
 
     if path.is_dir():
         raise InputOutputError(f"Cannot read {path}: it is a directory")
@@ -35,7 +42,7 @@ def load_json_object(path: Path) -> Dict[str, Any]:
         raise InputOutputError(message) from error
 
     try:
-        data = json.loads(text)
+        data, notes = decode_json(text)
     except json.JSONDecodeError as error:
         raise InputOutputError(f"Invalid JSON in {path}: {error.msg}") from error
     except RecursionError as error:
@@ -47,6 +54,8 @@ def load_json_object(path: Path) -> Dict[str, Any]:
 
     if not isinstance(data, dict):
         raise InputOutputError(f"The root element of {path} must be a JSON object.")
+    if warnings is not None:
+        warnings.extend(f"{path} {note}" for note in notes)
     return data
 
 

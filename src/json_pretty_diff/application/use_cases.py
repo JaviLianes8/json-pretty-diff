@@ -7,7 +7,12 @@ from ..domain.services import compute_top_level_diff
 
 
 class DiffUseCase:
-    """Application service that orchestrates diff computation."""
+    """Application service that orchestrates diff computation.
+
+    >>> from json_pretty_diff import DiffUseCase
+    >>> DiffUseCase().execute({"a": 1}, {"a": 2}).changed
+    {'a': {'old': 1, 'new': 2}}
+    """
 
     def execute(self, source: Dict[str, Any], target: Dict[str, Any]) -> DiffResult:
         """Generates the diff result for two JSON objects."""

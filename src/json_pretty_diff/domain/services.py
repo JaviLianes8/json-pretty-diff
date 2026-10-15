@@ -10,7 +10,17 @@ from .models import DiffResult
 
 
 def compute_top_level_diff(source: Dict[str, Any], target: Dict[str, Any]) -> DiffResult:
-    """Computes the top-level diff between two JSON objects."""
+    """Computes the top-level diff between two JSON objects.
+
+    Keys are compared at the top level only; a key counts as changed when its two values are
+    different JSON values at any depth. ``true`` differs from ``1``, ``NaN`` equals ``NaN``,
+    and ``1`` equals ``1.0``.
+
+    >>> from json_pretty_diff import compute_top_level_diff
+    >>> diff = compute_top_level_diff({"a": 1, "b": True, "c": 1}, {"a": 1.0, "b": 1, "d": 2})
+    >>> diff.added, diff.removed, diff.changed
+    (['d'], ['c'], {'b': {'old': True, 'new': 1}})
+    """
 
     added_keys = sorted(set(target) - set(source))
     removed_keys = sorted(set(source) - set(target))

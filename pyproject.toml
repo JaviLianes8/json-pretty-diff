@@ -1,26 +1,42 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "json-pretty-diff"
-version = "1.1.1"
+version = "1.2.0"
 description = "HTML-only diff generator for top-level JSON objects"
 authors = [{ name = "Javier Lianes García" }]
 readme = "README.md"
 requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Utilities",
+    "Typing :: Typed",
 ]
 dependencies = []
 keywords = ["json", "diff", "html", "cli", "report"]
 
 [project.urls]
 Homepage = "https://github.com/JaviLianes8/json-pretty-diff"
-Documentation = "https://github.com/JaviLianes8/json-pretty-diff#readme"
-"Bug Tracker" = "https://github.com/JaviLianes8/json-pretty-diff/issues"
+Documentation = "https://github.com/JaviLianes8/json-pretty-diff/blob/main/GUIDE.md"
+Source = "https://github.com/JaviLianes8/json-pretty-diff"
+Issues = "https://github.com/JaviLianes8/json-pretty-diff/issues"
+Changelog = "https://github.com/JaviLianes8/json-pretty-diff/blob/main/CHANGELOG.md"
 LinkedIn = "https://www.linkedin.com/in/jlianes/"
 Funding = "https://buymeacoffee.com/jlianesglrs"
 
@@ -53,5 +69,7 @@ strict = true
 files = ["src", "tests", "scripts", "main.py"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "src"]
 pythonpath = ["src", "tests"]
+addopts = "--doctest-modules"
+doctest_optionflags = ["ELLIPSIS"]
