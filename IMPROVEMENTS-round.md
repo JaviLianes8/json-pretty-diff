@@ -6,11 +6,11 @@ Progress:
 - [x] Comparison: booleans versus numbers, NaN against itself
 - [x] Report: unique section anchors, unencodable characters
 - [x] Command line: Python 3.9 import, stdout encoding, read and write errors, byte order mark, deep nesting
-- [ ] Tests and coverage, contracts, pinned sources
+- [x] Tests and coverage, contracts, pinned sources
 - [x] Typing: mypy --strict, py.typed
-- [ ] Docs: README factual fixes, CHANGELOG
-- [ ] Gates: ruff format, ruff check, mypy --strict, pytest on 3.8 to 3.14
-- [ ] Mutation run
+- [x] Docs: README factual fixes, CHANGELOG
+- [x] Gates: ruff format, ruff check, mypy --strict, pytest on 3.8 to 3.14
+- [x] Mutation run
 - [ ] Independent review findings fixed
 - [ ] Pull request opened, guard clean
 
@@ -80,6 +80,61 @@ on CPython 3.13, 3.9 and 3.8 on Windows:
 - Recursive diffing, exclusions or new CLI options (the README lists them as limitations).
 - Any change to the HTML layout, styles, texts or the timestamp line.
 
+## Verification
+
+- Gates from a fresh clone of the branch, after the fetch script had fetched RFC 8259 and
+  matched the manifest: `ruff format --check .`, `ruff check .`, `mypy --strict` and `pytest`
+  exit 0 on CPython 3.14. With `JSON_PRETTY_DIFF_E2E=1` the installed-wheel test builds the
+  wheel and sdist, checks their contents (`py.typed` and the new private modules in the wheel,
+  no fetched file and no planning notes in the sdist), installs the wheel in a fresh venv and
+  drives the `jpd` script from an empty folder. The suite also passes on CPython 3.8, 3.9,
+  3.10, 3.11, 3.12 and 3.13.
+- The HTML report is pinned byte for byte: `tests/golden/` holds three reports rendered by the
+  untouched 1.1.1 code (with styles, without styles, no differences), only the generation
+  time masked, and the branch renders them identically.
+- Line and branch coverage of the package is 98% before the mutation tests; what is left is
+  two unreachable guards in the owner's truncation panel code.
+- RFC 8259 (section 3 value grammar, section 4 unique names, section 8.1 UTF-8 and the byte
+  order mark, the section 13 examples cut out of the fetched text) is read in
+  `tests/test_sources.py`.
+- Mutation run from a clean clone, without bytecode and with a timeout per mutant, the suite
+  green before: 52 hand-placed mutants over the comparison, anchors, file input and output,
+  the command line and the main renderer branches. First run: 3 alive (the anchor loop
+  reduced to a single retry, `@` instead of `@@` for hunk headers, a truncated new value
+  alone); a test was added for each. Second run: 52 killed, 0 alive.
+
 ## Proposals for the owner
 
-(filled in as the round goes)
+These would change what existing users see for input that works today, or are design
+choices, so they are not in the code. Each is a suggestion, ranked by how often it should
+bite.
+
+1. **`1` and `1.0` are equal.** The comparison keeps Python's numeric equality, so a number
+   that changes from `1` to `1.0` is not reported, although the "Full JSON" table shows the
+   two texts. A strict mode would report it.
+2. **NaN, Infinity and huge exponents.** Python's reader accepts `NaN`, `Infinity` and
+   `-Infinity`, which RFC 8259 section 6 does not allow, and reads `1e400` as infinity, so
+   `1e400` against `2e400` is "no differences". Rejecting the non-standard tokens with exit 2,
+   or comparing numbers by their text, would make both visible.
+3. **Duplicate object names.** `{"a": 1, "a": 2}` is read as `{"a": 2}` without a word;
+   RFC 8259 section 4 says names SHOULD be unique. A warning on stderr would help.
+4. **Blank lines in the diff blocks.** Each diff line keeps its trailing newline inside a
+   block `<span>` in a `<pre>`, and the spans are also joined by newlines, so browsers may
+   show an empty line between diff lines. Worth a look in the browser before touching it,
+   since the layout is pinned.
+5. **The dash in the header.** "Generated on ... &mdash; v1.1.1" renders an em dash; the rest
+   of the catalogue avoids that character. A colon or a middle dot would do.
+6. **External icons.** The branding header loads its three icons from jsdelivr and
+   simpleicons, so a report opened offline shows broken images and opening it contacts two
+   CDNs. Inline SVGs would make the file self-contained.
+7. **Reproducible reports.** The generation time makes two runs on the same input differ; an
+   option (or `SOURCE_DATE_EPOCH`) to fix it would let users keep reports under version
+   control.
+8. **Integers longer than 4300 digits.** Python 3.11 and later (and security releases of
+   3.8 to 3.10) refuse them; they now give a clear exit 2. Raising the limit while reading
+   would accept them.
+9. **Very deep documents.** Documents that parse but are too deep for the snapshot copy or
+   the serializer now give a clear exit 2; an iterative copy would accept them.
+10. **Release.** All changes are fixes or additions; suggest releasing them as 1.1.2 (or
+    1.2.0 for the byte order mark and `py.typed`). The version was not changed. Classifiers
+    for the supported Python versions and `Typing :: Typed` could be added at the same time.
