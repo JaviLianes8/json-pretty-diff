@@ -56,6 +56,11 @@ def test_the_report_loads_nothing_from_the_network() -> None:
         assert source.startswith("data:image/svg+xml;base64,")
         assert base64.b64decode(source.split(",", 1)[1]).startswith(b"<svg ")
     assert not [url for url in ICONS_1_1_1 if url in report]
+    drawings = [base64.b64decode(source.split(",", 1)[1]).decode() for source in sources]
+    labels = re.findall(r'aria-label="([^"]+)"><img', report)
+    assert labels == ["LinkedIn", "GitHub", "Buy Me a Coffee"]
+    for drawing, colour in zip(drawings, ["#0a66c2", "#181717", "#ffdd00"]):
+        assert f'fill="{colour}"' in drawing
     assert "<link" not in report and "@import" not in report and "url(" not in report
 
 
@@ -144,7 +149,7 @@ def test_diff_lines_get_a_class_by_their_prefix() -> None:
     html = render_diff_lines(["@@ -1 +1 @@", "--- old", "+++ new", "+a", "-b", " c"], False)
     classes = re.findall(r'<span class="(\w+)">', html)
     assert classes == ["hunk", "ctx", "ctx", "add", "del", "ctx"]
-    assert "(truncated)" in render_diff_lines([], True)
+    assert render_diff_lines([], True) == '<span class="ctx">… (truncated)\n</span>'
     assert render_diff_lines(["+<a>"], False) == '<span class="add">+&lt;a&gt;\n</span>'
     assert render_diff_lines([" x\n", "+y"], False) == (
         '<span class="ctx"> x\n</span><span class="add">+y\n</span>'

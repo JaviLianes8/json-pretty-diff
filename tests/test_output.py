@@ -111,6 +111,28 @@ def test_a_reader_that_stops_early_gets_no_traceback(tmp_path: Path) -> None:
     assert stderr == b""
 
 
+def test_a_status_line_to_a_closed_pipe_leaves_nothing_for_the_exit_flush(
+    tmp_path: Path,
+) -> None:
+    # The pipe is closed before jpd writes its short status line, which sits in the buffer
+    # until a flush; without the flush and the null device swap the interpreter's own flush
+    # at exit fails and prints "Exception ignored".
+    code = "from json_pretty_diff.cli import main; raise SystemExit(main())"
+    env = {"PYTHONPATH": str(ROOT / "src"), "SYSTEMROOT": os.environ.get("SYSTEMROOT", "")}
+    process = subprocess.Popen(
+        [sys.executable, "-c", code, str(BASE), str(UPDATE), "-o", str(tmp_path / "r.html")],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=env,
+    )
+    assert process.stdout is not None and process.stderr is not None
+    process.stdout.close()
+    stderr = process.stderr.read()
+    assert process.wait(timeout=120) == 1
+    assert stderr == b""
+    assert (tmp_path / "r.html").is_file()
+
+
 def test_no_timestamp_gives_the_same_bytes_every_time(tmp_path: Path, capsys: Capture) -> None:
     first, second = tmp_path / "1.html", tmp_path / "2.html"
     assert run_cli(BASE, UPDATE, "--no-timestamp", "-q", "-o", first) == 1

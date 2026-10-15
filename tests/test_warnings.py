@@ -139,3 +139,7 @@ def test_a_lone_surrogate_name_in_a_warning_does_not_crash(tmp_path: Path, capsy
     assert run_cli(source, source, "-o", report) == 0
     assert "Warning: " in capsys.readouterr().err
     assert "\\ud800" in report.read_text(encoding="utf-8")
+
+
+def test_names_keep_their_characters_in_the_message() -> None:
+    assert decode_json('{"café": 1, "café": 2}')[1] == [REPEATS + '"café"']
