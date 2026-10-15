@@ -9,6 +9,7 @@ from __future__ import annotations
 import dataclasses
 import inspect
 import re
+from pathlib import Path
 
 import pytest
 from conftest import ROOT, run_cli
@@ -67,7 +68,7 @@ def test_console_script_points_at_cli_main() -> None:
 
 
 def test_py_typed_ships_with_the_package() -> None:
-    package = ROOT / "src" / "json_pretty_diff"
+    package = Path(json_pretty_diff.__file__).parent
     assert (package / "py.typed").is_file()
     assert '"py.typed"' in (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
