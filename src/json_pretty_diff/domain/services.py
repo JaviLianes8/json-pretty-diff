@@ -3,24 +3,30 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Dict
+from typing import Any, Dict, Mapping
 
 from ._equality import json_equal
 from .models import DiffResult
 
 
-def compute_top_level_diff(source: Dict[str, Any], target: Dict[str, Any]) -> DiffResult:
+def compute_top_level_diff(source: Mapping[str, Any], target: Mapping[str, Any]) -> DiffResult:
     """Computes the top-level diff between two JSON objects.
 
     Keys are compared at the top level only; a key counts as changed when its two values are
     different JSON values at any depth. ``true`` differs from ``1``, ``NaN`` equals ``NaN``,
-    and ``1`` equals ``1.0``.
+    and ``1`` equals ``1.0``. Both arguments must be mappings (a ``TypeError`` says which is
+    not); values nested deeper than the interpreter's recursion limit raise ``RecursionError``
+    when the snapshots are copied.
 
     >>> from json_pretty_diff import compute_top_level_diff
     >>> diff = compute_top_level_diff({"a": 1, "b": True, "c": 1}, {"a": 1.0, "b": 1, "d": 2})
     >>> diff.added, diff.removed, diff.changed
     (['d'], ['c'], {'b': {'old': True, 'new': 1}})
     """
+
+    for name, value in (("source", source), ("target", target)):
+        if not isinstance(value, Mapping):
+            raise TypeError(f"{name} must be a mapping, not {type(value).__name__}")
 
     added_keys = sorted(set(target) - set(source))
     removed_keys = sorted(set(source) - set(target))
@@ -40,6 +46,6 @@ def compute_top_level_diff(source: Dict[str, Any], target: Dict[str, Any]) -> Di
         changed=changed,
         added_values=added_values,
         removed_values=removed_values,
-        source_snapshot=deepcopy(source),
-        target_snapshot=deepcopy(target),
+        source_snapshot=deepcopy(dict(source)),
+        target_snapshot=deepcopy(dict(target)),
     )

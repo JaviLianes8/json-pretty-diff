@@ -115,3 +115,17 @@ def test_nan_differs_from_numbers_and_infinity() -> None:
 def test_json_equality(left: Any, right: Any, expected: bool) -> None:
     assert json_equal(left, right) is expected
     assert json_equal(right, left) is expected
+
+
+@pytest.mark.parametrize(("source", "target", "name"), [([1], {}, "source"), ({}, "x", "target")])
+def test_non_mappings_are_refused_by_name(source: Any, target: Any, name: str) -> None:
+    with pytest.raises(TypeError, match=rf"^{name} must be a mapping, not "):
+        compute_top_level_diff(source, target)
+
+
+def test_any_mapping_is_accepted_and_snapshots_are_plain_dicts() -> None:
+    from types import MappingProxyType
+
+    diff = compute_top_level_diff(MappingProxyType({"a": 1}), MappingProxyType({"a": 2}))
+    assert diff.changed == {"a": {"old": 1, "new": 2}}
+    assert type(diff.source_snapshot) is dict and diff.target_snapshot == {"a": 2}

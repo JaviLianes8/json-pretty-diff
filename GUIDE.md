@@ -84,10 +84,10 @@ Output details:
   stops writing without a message and exits with 0 or 1 as usual.
 - A UTF-8 byte order mark at the start of an input is accepted; UTF-16 input is refused with
   a hint.
-- Errors that end with exit 2: a missing or unreadable file, a directory, text that is not
-  UTF-8, invalid JSON, a root that is not an object, an integer longer than Python's digit
-  limit (4,300 digits on current Pythons), a document nested too deeply for the report, a
-  report path that cannot be written.
+- Errors that end with exit 2: no standard output to write the report to, a missing or
+  unreadable file, a directory, text that is not UTF-8, invalid JSON, a root that is not an
+  object, an integer longer than Python's digit limit (4,300 digits on current Pythons), a
+  document nested too deeply for the report, a report path that cannot be written.
 
 ## From Python
 
@@ -105,12 +105,15 @@ page = render_html(diff, include_timestamp=False, warnings=["checked by hand"])
 assert "<h2>Warnings</h2>" in page and "Generated on" not in page
 ```
 
-`compute_top_level_diff(source, target)` returns a frozen `DiffResult` with sorted `added` and
+`compute_top_level_diff(source, target)` takes two mappings (anything else raises `TypeError`)
+and returns a `DiffResult`, a frozen dataclass whose lists and dicts can still be changed in
+place, with sorted `added` and
 `removed` key lists, `changed` mapping each changed key to its `old` and `new` value, the
 values of the added and removed keys, and copies of both documents. `render_html(diff, *,
 include_styles=True, include_timestamp=True, warnings=())` returns the page as a string.
-`JsonPrettyDiffCLI().run(argv)` runs the command line and returns its exit code; `main()` is the
-`jpd` script.
+`JsonPrettyDiffCLI().run(argv)` runs the command line and returns 0 or 1; errors, `--help` and
+`--version` raise `SystemExit` with their code, as the script does. `main()` is the `jpd`
+script. Documents nested deeper than Python's recursion limit raise `RecursionError`.
 
 ## Large and repetitive input
 

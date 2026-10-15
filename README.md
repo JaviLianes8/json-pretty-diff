@@ -78,6 +78,7 @@ More in the [guide](https://github.com/JaviLianes8/json-pretty-diff/blob/main/GU
 jpd fixtures/base.json fixtures/update.json -o reports/diff.html
 ```
 The file `diff.html` will contain one section per change category with simple styles that highlight added, removed, or modified keys.
+(`fixtures/` and `reports/` stand for your own folders.)
 
 ## Limitations
 - Only the first-level keys are compared (no recursive diff).

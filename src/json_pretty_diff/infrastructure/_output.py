@@ -21,6 +21,8 @@ def to_stdout(write: Callable[[], None]) -> bool:
     :class:`InputOutputError`.
     """
 
+    if sys.stdout is None:
+        raise InputOutputError("Cannot write to standard output: there is none")
     try:
         write()
         sys.stdout.flush()
@@ -49,6 +51,8 @@ def _discard_stdout() -> None:
 def to_stderr(prefix: str, message: str) -> None:
     """Writes ``prefix: message`` to standard error; a closed stderr is ignored."""
 
+    if sys.stderr is None:
+        return
     try:
         write_line(f"{prefix}: {message}\n", sys.stderr)
         sys.stderr.flush()

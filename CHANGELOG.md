@@ -33,6 +33,8 @@ notes.
   writing quietly and exits with the comparison result, 0 or 1. 1.1.1 printed a
   `BrokenPipeError` traceback and exited with 1. Any other failure to write to standard output
   prints `Error: Cannot write to standard output: ...` and exits with 2.
+  Without any standard output (`pythonw`, a closed descriptor) the report cannot be shown
+  and `jpd` exits with 2; with `-o` the report is written and the status line skipped.
 - Line matching for the diff blocks and the full JSON table is bounded in time. Input that
   made 1.1.1 run for minutes (a shuffled array of 100,000 numbers, an array of 16,000 values
   repeating a few hundred numbers) now renders in about a second, and the part of it between
@@ -52,6 +54,8 @@ notes.
   paths still work.
 - A UTF-8 byte order mark at the start of an input is accepted (RFC 8259 section 8.1).
 - `py.typed`, so type checkers use the package's annotations.
+- `compute_top_level_diff` and `DiffUseCase.execute` accept any mapping and raise `TypeError`
+  naming the argument that is not one (1.1.1 failed later with an unrelated error).
 - Package metadata: Production/Stable status, supported Python versions, `Typing :: Typed`, an
   SPDX licence expression, and Source, Issues and Changelog links.
 

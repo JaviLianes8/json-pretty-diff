@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 import webbrowser
 from pathlib import Path
 from textwrap import dedent
@@ -131,7 +132,8 @@ class JsonPrettyDiffCLI:
         if args.output:
             output_path = Path(args.output)
             self._guard(lambda: write_report(output_path, html_report))
-            if not args.quiet:
+            # Without a standard output (pythonw, a closed descriptor) the status line is skipped.
+            if not args.quiet and sys.stdout is not None:
                 line = f"Report saved to {output_path} ({self._summarize(diff)})\n"
                 self._guard(lambda: to_stdout(lambda: write_line(line)))
             if args.open:

@@ -143,3 +143,15 @@ def test_no_timestamp_gives_the_same_bytes_every_time(tmp_path: Path, capsys: Ca
     assert '<p style="color: #64748b; font-size: 0.9rem;">json-pretty-diff v' in page
     assert run_cli(BASE, UPDATE, "-q", "-o", first) == 1
     assert "Generated on " in first.read_text(encoding="utf-8")
+
+
+def test_no_standard_output_is_an_error_and_the_file_report_still_works(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: Capture
+) -> None:
+    monkeypatch.setattr(sys, "stdout", None)
+    assert run_cli(BASE, UPDATE) == 2
+    assert capsys.readouterr().err == "Error: Cannot write to standard output: there is none\n"
+    assert run_cli(BASE, UPDATE, "-o", tmp_path / "r.html") == 1
+    assert (tmp_path / "r.html").is_file()
+    monkeypatch.setattr(sys, "stderr", None)
+    assert run_cli(BASE, UPDATE) == 2
