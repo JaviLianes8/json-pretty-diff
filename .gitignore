@@ -81,12 +81,6 @@ cython_debug/
 /main
 /temp
 
-# AI assistant artifacts (kept local, never published)
-CLAUDE.md
-claude.md
-.claude/
-.claude*
-claude/
 .ruff_cache/
 .mypy_cache/
 
