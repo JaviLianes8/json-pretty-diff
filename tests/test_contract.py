@@ -1,4 +1,8 @@
-"""The public surface of 1.1.1 is pinned: names, signatures, options and packaging."""
+"""The public surface is pinned: names, signatures, options and packaging.
+
+Every name and option of 1.1.1 is still there; 1.2.0 adds the top-level names, two keyword
+options of ``render_html`` and ``--no-timestamp``.
+"""
 
 from __future__ import annotations
 
@@ -17,9 +21,35 @@ from json_pretty_diff.domain.services import compute_top_level_diff
 from json_pretty_diff.infrastructure.cli import JsonPrettyDiffCLI
 from json_pretty_diff.presentation.html_renderer import render_html
 
+PUBLIC = {
+    "DiffResult": DiffResult,
+    "DiffUseCase": DiffUseCase,
+    "JsonPrettyDiffCLI": JsonPrettyDiffCLI,
+    "compute_top_level_diff": compute_top_level_diff,
+    "main": cli.main,
+    "render_html": render_html,
+}
 
-def test_package_exports_only_the_version() -> None:
-    assert json_pretty_diff.__all__ == ["__version__"]
+
+def test_package_exports_exactly_the_public_names() -> None:
+    assert sorted(json_pretty_diff.__all__) == sorted([*PUBLIC, "__version__"])
+    for name, value in PUBLIC.items():
+        assert getattr(json_pretty_diff, name) is value
+    public = {name for name in vars(json_pretty_diff) if not name.startswith("_")}
+    assert public - set(PUBLIC) <= {
+        "application",
+        "cli",
+        "domain",
+        "infrastructure",
+        "presentation",
+        "version",
+    }
+
+
+@pytest.mark.parametrize("name", sorted(PUBLIC))
+def test_every_public_name_has_a_docstring_with_an_example(name: str) -> None:
+    doc = inspect.getdoc(PUBLIC[name]) or ""
+    assert ">>> " in doc, name
 
 
 def test_version_is_three_numbers_and_matches_the_project_file() -> None:
@@ -61,9 +91,12 @@ def test_diff_result_fields_are_unchanged() -> None:
 def test_function_signatures_are_unchanged() -> None:
     assert list(inspect.signature(compute_top_level_diff).parameters) == ["source", "target"]
     render = inspect.signature(render_html).parameters
-    assert list(render) == ["diff", "include_styles"]
-    assert render["include_styles"].kind is inspect.Parameter.KEYWORD_ONLY
-    assert render["include_styles"].default is True
+    assert list(render) == ["diff", "include_styles", "include_timestamp", "warnings"]
+    for option, default in (("include_styles", True), ("include_timestamp", True)):
+        assert render[option].kind is inspect.Parameter.KEYWORD_ONLY
+        assert render[option].default is default
+    assert render["warnings"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert render["warnings"].default == ()
     run = inspect.signature(JsonPrettyDiffCLI.run).parameters
     assert list(run) == ["self", "argv"]
     assert run["argv"].default is None
@@ -71,7 +104,8 @@ def test_function_signatures_are_unchanged() -> None:
 
 
 @pytest.mark.parametrize(
-    "option", ["-o", "--output", "--open", "-q", "--quiet", "--no-style", "--version"]
+    "option",
+    ["-o", "--output", "--open", "-q", "--quiet", "--no-style", "--no-timestamp", "--version"],
 )
 def test_every_documented_option_is_in_the_help(
     option: str, capsys: pytest.CaptureFixture[str]

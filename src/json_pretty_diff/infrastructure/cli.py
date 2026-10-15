@@ -110,6 +110,8 @@ class JsonPrettyDiffCLI:
         warnings: List[str] = []
         source = self._load_json(Path(args.source), warnings)
         target = self._load_json(Path(args.target), warnings)
+        # The same file given twice warns once.
+        warnings = list(dict.fromkeys(warnings))
 
         try:
             diff = self._use_case.execute(source, target)

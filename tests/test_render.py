@@ -1,12 +1,14 @@
-"""The HTML report: the 1.1.1 layout is pinned and every piece taken from input is escaped."""
+"""The HTML report: 1.1.1 layout up to the documented 1.2.0 changes, input always escaped."""
 
 from __future__ import annotations
 
+import base64
 import re
 from datetime import datetime, timezone
 
 import pytest
 from conftest import GOLDEN, fixture, normalize
+from golden_changes import ICONS_1_1_1, upgrade_1_1_1
 
 from json_pretty_diff import __version__
 from json_pretty_diff.domain.services import compute_top_level_diff
@@ -34,17 +36,33 @@ LONG = "x" * 10_001
         ("report-1.1.1-same.html", "base.json", True),
     ],
 )
-def test_report_is_byte_identical_to_version_1_1_1(golden: str, update: str, styles: bool) -> None:
-    # The golden files were rendered by the 1.1.1 code before any change of this round.
+def test_report_differs_from_version_1_1_1_only_as_documented(
+    golden: str, update: str, styles: bool
+) -> None:
+    # The golden files were rendered by the untouched 1.1.1 code; the edit applies the
+    # header hyphen, the embedded icons and the diff rows, and nothing else may differ.
     diff = compute_top_level_diff(fixture("base.json"), fixture(update))
     report = normalize(render_html(diff, include_styles=styles))
-    assert report == (GOLDEN / golden).read_text(encoding="utf-8")
+    old = (GOLDEN / golden).read_text(encoding="utf-8")
+    assert report != old
+    assert report == upgrade_1_1_1(old, __version__)
+
+
+def test_the_report_loads_nothing_from_the_network() -> None:
+    report = render_html(compute_top_level_diff({"a": 1}, {"a": 2, "b": [1]}))
+    sources = re.findall(r'\bsrc="([^"]*)"', report)
+    assert len(sources) == 3
+    for source in sources:
+        assert source.startswith("data:image/svg+xml;base64,")
+        assert base64.b64decode(source.split(",", 1)[1]).startswith(b"<svg ")
+    assert not [url for url in ICONS_1_1_1 if url in report]
+    assert "<link" not in report and "@import" not in report and "url(" not in report
 
 
 def test_header_carries_the_utc_time_and_version() -> None:
     before = datetime.now(timezone.utc).replace(microsecond=0)
     report = render_html(compute_top_level_diff({}, {"a": 1}))
-    match = re.search(r"Generated on (\S+ \S+) UTC &mdash; v(\S+)</p>", report)
+    match = re.search(r"Generated on (\S+ \S+) UTC - v(\S+)</p>", report)
     assert match is not None
     stamp = datetime.strptime(match.group(1), "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
     assert before <= stamp <= datetime.now(timezone.utc)
@@ -127,7 +145,21 @@ def test_diff_lines_get_a_class_by_their_prefix() -> None:
     classes = re.findall(r'<span class="(\w+)">', html)
     assert classes == ["hunk", "ctx", "ctx", "add", "del", "ctx"]
     assert "(truncated)" in render_diff_lines([], True)
-    assert render_diff_lines(["+<a>"], False) == '<span class="add">+&lt;a&gt;</span>'
+    assert render_diff_lines(["+<a>"], False) == '<span class="add">+&lt;a&gt;\n</span>'
+    assert render_diff_lines([" x\n", "+y"], False) == (
+        '<span class="ctx"> x\n</span><span class="add">+y\n</span>'
+    )
+
+
+def test_diff_rows_are_contiguous_spans_each_ending_its_line() -> None:
+    # Text between block spans in a <pre> shows as an empty row in a browser (1.1.1 did).
+    report = render_html(compute_top_level_diff({"k": [1, 2, 3]}, {"k": [1, 3, 4]}))
+    blocks = re.findall(r'<pre class="gitdiff(?: gitdiff-legend)?">(.*?)</pre>', report, re.S)
+    assert len(blocks) == 2
+    for block in blocks:
+        rows = re.findall(r'<span class="\w+">([^<]*)</span>', block)
+        assert block == "".join(re.findall(r'<span class="\w+">[^<]*</span>', block))
+        assert rows and all(row.endswith("\n") and "\n" not in row[:-1] for row in rows)
 
 
 def test_diff_sections_follow_added_removed_changed_order() -> None:
@@ -148,5 +180,4 @@ def test_summary_counts_and_links() -> None:
 
 def test_bool_and_number_change_is_rendered() -> None:
     report = render_html(compute_top_level_diff({"flag": True}, {"flag": 1}))
-    assert '<span class="del">-true</span>' in report
-    assert '<span class="add">+1</span>' in report
+    assert '<span class="del">-true\n</span><span class="add">+1\n</span>' in report

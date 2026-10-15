@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import html
 import json
-from difflib import SequenceMatcher
 from typing import Any, List
 
 from ...domain.models import DiffResult
+from ._matching import line_opcodes
 
 FULL_JSON_TABLE_ID = "full-json-table"
 
@@ -24,10 +24,9 @@ def _serialize_full_json(data: Any) -> str:
 def _build_side_by_side_rows(old_lines: List[str], new_lines: List[str]) -> str:
     """Creates table rows that highlight line-level differences."""
 
-    matcher = SequenceMatcher(None, old_lines, new_lines)
     rows: List[str] = []
 
-    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+    for tag, i1, i2, j1, j2 in line_opcodes(old_lines, new_lines):
         old_chunk = old_lines[i1:i2]
         new_chunk = new_lines[j1:j2]
         limit = max(len(old_chunk), len(new_chunk)) or 1
