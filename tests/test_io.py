@@ -69,3 +69,16 @@ def test_write_creates_folders_and_writes_utf8(tmp_path: Path) -> None:
     write_report(target, "ñ\ud800")
     assert target.read_bytes().startswith("ñ".encode())
     assert target.read_text(encoding="utf-8").endswith("\\ud800")
+
+
+def test_other_read_errors_carry_the_system_reason(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = write_bytes(tmp_path / "a.json", b"{}")
+
+    def refuse(self: Path) -> bytes:
+        raise PermissionError(13, "Permission denied")
+
+    monkeypatch.setattr(Path, "read_bytes", refuse)
+    with pytest.raises(InputOutputError, match=r"^Cannot read .*a\.json: Permission denied$"):
+        load_json_object(path)

@@ -12,7 +12,7 @@ Progress:
 - [x] Gates: ruff format, ruff check, mypy --strict, pytest on 3.8 to 3.14
 - [x] Mutation run
 - [x] Independent review findings fixed
-- [ ] Pull request opened, guard clean
+- [x] Pull request opened (#21), guard clean
 
 Every change keeps the public surface: the `jpd` script and its options (`-o/--output`,
 `--open`, `-q/--quiet`, `--no-style`, `--version`), the exit codes 0, 1 and 2, the HTML
@@ -92,7 +92,7 @@ on CPython 3.13, 3.9 and 3.8 on Windows:
 - The HTML report is pinned byte for byte: `tests/golden/` holds three reports rendered by the
   untouched 1.1.1 code (with styles, without styles, no differences), only the generation
   time masked, and the branch renders them identically.
-- Line and branch coverage of the package is 98% before the mutation tests; what is left is
+- Line and branch coverage of the package is 99% after the review fixes; what is left is
   two unreachable guards in the owner's truncation panel code.
 - RFC 8259 (section 3 value grammar, section 4 unique names, section 8.1 UTF-8 and the byte
   order mark, the section 13 examples cut out of the fetched text) is read in
@@ -101,7 +101,10 @@ on CPython 3.13, 3.9 and 3.8 on Windows:
   green before: 52 hand-placed mutants over the comparison, anchors, file input and output,
   the command line and the main renderer branches. First run: 3 alive (the anchor loop
   reduced to a single retry, `@` instead of `@@` for hunk headers, a truncated new value
-  alone); a test was added for each. Second run: 52 killed, 0 alive.
+  alone); a test was added for each. Second run: 52 killed, 0 alive. Third run, after the
+  review fixes rewrote the comparison and the error paths: 59 mutants, 1 alive (the generic
+  read error, no longer reached by the directory test); a test was added and checked to fail
+  with that mutant.
 
 ## Behaviour changes to confirm
 
