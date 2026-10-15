@@ -11,6 +11,7 @@ from json_pretty_diff import cli
 from json_pretty_diff.domain.models import DiffResult
 from json_pretty_diff.domain.services import compute_top_level_diff
 from json_pretty_diff.presentation.html_renderer import render_html
+from json_pretty_diff.presentation.html_renderer._diff_view import render_diff_lines
 
 
 def _right_cells(report: str) -> list[str]:
@@ -51,3 +52,14 @@ def test_console_entry_point_runs_the_cli(
         cli.main()
     assert raised.value.code == 0
     assert capsys.readouterr().out.startswith("jpd ")
+
+
+def test_only_double_at_lines_are_hunk_headers() -> None:
+    html = render_diff_lines(["@ x", "@@ -1 +1 @@"], False)
+    assert re.findall(r'<span class="(\w+)">', html) == ["ctx", "hunk"]
+
+
+def test_a_long_new_value_alone_gets_the_full_content_panel() -> None:
+    report = render_html(compute_top_level_diff({"k": "short"}, {"k": "y" * 10_001}))
+    assert '<details class="truncated-details">' in report
+    assert "New value" in report and "Old value" not in report

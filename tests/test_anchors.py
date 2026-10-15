@@ -56,3 +56,7 @@ def test_report_ids_are_unique_and_links_match_them() -> None:
     for key, anchor in zip(["a b", "a-b", "a-b-2"], ids):
         section = report[report.index(f'id="diff-{anchor}"') :]
         assert section.index(f"<code>{key}</code>") < section.index("</section>")
+
+
+def test_numbered_anchor_skips_every_number_already_taken() -> None:
+    assert anchors("a-b-2", "a-b-3", "a b", "a.b") == ["a-b-2", "a-b-3", "a-b", "a-b-4"]
