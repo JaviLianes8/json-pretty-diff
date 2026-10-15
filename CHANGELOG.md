@@ -16,6 +16,7 @@ All notable changes to this project are documented here. The format follows
 - Section anchors stay unique when a key looks like a numbered anchor (`a b`, `a-b`, `a-b-2`).
 - Invalid UTF-8, unreadable inputs, unwritable outputs, integers beyond Python's digit limit
   and documents nested too deeply print `Error: ...` and exit with 2 instead of a traceback.
+- Errors name a directory given as input or output, and hint at UTF-16 input.
 - Lone surrogate escapes such as `"\ud800"` are written as `\ud800` instead of crashing.
 
 ### Added

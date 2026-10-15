@@ -11,7 +11,7 @@ Progress:
 - [x] Docs: README factual fixes, CHANGELOG
 - [x] Gates: ruff format, ruff check, mypy --strict, pytest on 3.8 to 3.14
 - [x] Mutation run
-- [ ] Independent review findings fixed
+- [x] Independent review findings fixed
 - [ ] Pull request opened, guard clean
 
 Every change keeps the public surface: the `jpd` script and its options (`-o/--output`,
@@ -103,6 +103,46 @@ on CPython 3.13, 3.9 and 3.8 on Windows:
   reduced to a single retry, `@` instead of `@@` for hunk headers, a truncated new value
   alone); a test was added for each. Second run: 52 killed, 0 alive.
 
+## Behaviour changes to confirm
+
+These fixes change the result for input that ran without an error in 1.1.1, so the owner
+should confirm them before a release. Each is small to revert: one branch in
+`domain/_equality.py` for the first two, one call in `infrastructure/_io.py` for the third.
+
+- `true` against `1` (or `false` against `0`) now counts as a change: exit 0 becomes exit 1
+  and the summary lists the key. RFC 8259 section 3 keeps them as different value types.
+- `NaN` against `NaN` no longer counts as a change: exit 1 becomes exit 0. `NaN` is not JSON
+  (RFC 8259 section 6); a file compared with itself reporting a change was the bug.
+- A report on stdout is always UTF-8. Before, a console set to another encoding with an
+  error handler (`PYTHONIOENCODING=cp1252:replace`) got that encoding, which contradicts the
+  page's `<meta charset="utf-8">`.
+
+## Review fixes
+
+An independent review compared the branch with 1.1.1 on 30 input pairs in five output
+modes (identical bytes, messages and exit codes for every input that worked before, except
+the intended fixes) and attacked the fixes. Fixed, each with a test:
+
+- The first version of the JSON comparison recursed with about three stack frames per
+  nesting level, so on Python 3.10 and 3.11 a shared key nested 400 levels deep, which 1.1.1
+  compares, became "nested too deeply" (exit 2). The comparison now walks its own stack;
+  `tests/test_cli_process.py` compares a key 450 levels deep in a fresh interpreter and
+  expects exit 1 (it fails on the recursive version). The walk takes about a second for
+  300,000 records, less than one of the two snapshot copies 1.1.1 already makes.
+- The deep-document test accepted exit 1 or 2 and ran inside pytest's stack; it now runs in
+  a fresh interpreter and expects exactly exit 2 with an `Error:` line.
+- A directory given as input or as `-o` said "Permission denied" on Windows; it now says
+  "it is a directory".
+- A UTF-16 file (what Windows PowerShell 5 writes with `>`) gets "(it looks like UTF-16)"
+  after "not UTF-8 text"; an integer beyond Python's digit limit says so in plain words
+  instead of repeating the interpreter's advice.
+- Ruff targets Python 3.9, the declared floor. mypy 2.4 cannot target below 3.10; the code
+  uses postponed annotations throughout and the suite runs on 3.8 and 3.9.
+- A redundant flush before switching the stream back was removed.
+
+Left as written: the README example paths (`fixtures/base.json`) are an illustration of the
+user's own files, not a claim about the repository.
+
 ## Proposals for the owner
 
 These would change what existing users see for input that works today, or are design
@@ -138,3 +178,9 @@ bite.
 10. **Release.** All changes are fixes or additions; suggest releasing them as 1.1.2 (or
     1.2.0 for the byte order mark and `py.typed`). The version was not changed. Classifiers
     for the supported Python versions and `Typing :: Typed` could be added at the same time.
+11. **Decimal precision.** `0.1` against `0.10000000000000001`, or `1` against
+    `1.0000000000000001`, read as the same float and give "no differences". Reading floats
+    as `Decimal`, or comparing number texts, would show them.
+12. **Broken pipe.** `jpd a.json b.json | head -c 20` ends in a `BrokenPipeError`
+    traceback and exit 1 (unchanged from 1.1.1). Leaving quietly would be friendlier; the
+    exit code to use is a design choice.
