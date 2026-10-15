@@ -1,7 +1,8 @@
 """Command-line interface for JSON Pretty Diff."""
 
+from __future__ import annotations
+
 import argparse
-import json
 import sys
 import webbrowser
 from pathlib import Path
@@ -9,8 +10,17 @@ from textwrap import dedent
 from typing import Any, Dict, Sequence
 
 from ..application.use_cases import DiffUseCase
+from ..domain.models import DiffResult
 from ..presentation.html_renderer import render_html
 from ..version import __version__
+from ._io import (
+    InputOutputError,
+    load_json_object,
+    write_line,
+    write_report,
+    write_report_to_stream,
+)
+
 
 class JsonPrettyDiffCLI:
     """Facade that exposes the command-line entry point."""
@@ -63,9 +73,7 @@ class JsonPrettyDiffCLI:
             action="store_true",
             help="Generate HTML without CSS styles (lighter output).",
         )
-        self._parser.epilog = (
-            "When `--output` is omitted, redirect the standard output to a file with `>` if you want to keep the report."
-        )
+        self._parser.epilog = "When `--output` is omitted, redirect the standard output to a file with `>` if you want to keep the report."
         self._use_case = DiffUseCase()
 
     def run(self, argv: Sequence[str] | None = None) -> int:
@@ -87,21 +95,24 @@ class JsonPrettyDiffCLI:
         source = self._load_json(Path(args.source))
         target = self._load_json(Path(args.target))
 
-        diff = self._use_case.execute(source, target)
-        html_report = render_html(diff, include_styles=not args.no_style)
+        try:
+            diff = self._use_case.execute(source, target)
+            html_report = render_html(diff, include_styles=not args.no_style)
+        except RecursionError as error:
+            self._emit_error(f"{args.source} or {args.target} is nested too deeply to compare.")
+            raise SystemExit(2) from error
 
         if args.output:
             output_path = Path(args.output)
             self._write_output(output_path, html_report)
             if not args.quiet:
-                sys.stdout.write(f"Report saved to {output_path} ({self._summarize(diff)})\n")
+                write_line(f"Report saved to {output_path} ({self._summarize(diff)})\n")
             if args.open:
                 webbrowser.open(output_path.resolve().as_uri())
         else:
             if not args.quiet:
-                sys.stdout.write(html_report)
-                if not html_report.endswith("\n"):
-                    sys.stdout.write("\n")
+                ending = "" if html_report.endswith("\n") else "\n"
+                write_report_to_stream(html_report + ending)
 
         return 1 if diff.has_differences else 0
 
@@ -109,37 +120,27 @@ class JsonPrettyDiffCLI:
         """Loads a JSON file from disk ensuring it is an object."""
 
         try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-        except FileNotFoundError as error:
-            self._emit_error(f"File not found: {path}")
+            return load_json_object(path)
+        except InputOutputError as error:
+            self._emit_error(str(error))
             raise SystemExit(2) from error
-        except json.JSONDecodeError as error:
-            self._emit_error(f"Invalid JSON in {path}: {error.msg}")
-            raise SystemExit(2) from error
-
-        if not isinstance(data, dict):
-            self._emit_error(f"The root element of {path} must be a JSON object.")
-            raise SystemExit(2)
-
-        return data
 
     def _write_output(self, path: Path, html_report: str) -> None:
         """Persists the HTML report to the specified path."""
 
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(html_report, encoding="utf-8")
+        try:
+            write_report(path, html_report)
+        except InputOutputError as error:
+            self._emit_error(str(error))
+            raise SystemExit(2) from error
 
     @staticmethod
-    def _summarize(diff: Any) -> str:
+    def _summarize(diff: DiffResult) -> str:
         """Builds a short summary like ``"2 added, 1 removed, 0 changed"``."""
 
         if not diff.has_differences:
             return "no differences"
-        return (
-            f"{len(diff.added)} added, "
-            f"{len(diff.removed)} removed, "
-            f"{len(diff.changed)} changed"
-        )
+        return f"{len(diff.added)} added, {len(diff.removed)} removed, {len(diff.changed)} changed"
 
     @staticmethod
     def _emit_error(message: str) -> None:

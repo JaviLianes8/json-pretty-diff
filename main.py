@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import sys
+from pathlib import Path
+
 
 def _ensure_src_on_path() -> None:
     """Adds the local ``src`` directory to ``sys.path`` when running from source."""
@@ -20,10 +21,12 @@ _ensure_src_on_path()
 
 from json_pretty_diff.infrastructure.cli import JsonPrettyDiffCLI  # noqa: E402  (import after path setup)
 
+
 def main() -> int:
     """Runs the JSON Pretty Diff command-line interface."""
 
     return JsonPrettyDiffCLI().run()
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

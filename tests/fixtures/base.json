@@ -1,0 +1,9 @@
+{
+  "name": "json-pretty-diff",
+  "version": "1.0.0",
+  "tags": ["json", "diff"],
+  "owner": {"name": "Ana", "city": "Aranjuez"},
+  "legacy": true,
+  "notes": "<b>bold</b> & \"quoted\"",
+  "build number": 7
+}

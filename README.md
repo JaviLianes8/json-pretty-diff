@@ -63,4 +63,4 @@ The file `diff.html` will contain one section per change category with simple st
 - Only the first-level keys are compared (no recursive diff).
 - There are no exclusions, tolerances, or advanced configuration flags.
 - Console output never uses ANSI colors.
-- There is no CI/CD integration or bundled automated test suite.
+- There is no CI/CD integration; the automated test suite in `tests/` runs locally (see `CONTRIBUTING.md`).

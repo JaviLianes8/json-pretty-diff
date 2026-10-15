@@ -7,16 +7,18 @@ from typing import Dict, Iterable, List
 
 from ...domain.models import DiffResult
 
+
 def _render_summary_card(title: str, css_class: str, items_html: str) -> str:
     """Builds a summary card with its item list."""
 
     parts = [f'<div class="summary-card {css_class}">', f'<h4 class="summary-title">{title}</h4>']
     if items_html:
-        parts.extend(['<ul class="summary-list">', items_html, '</ul>'])
+        parts.extend(['<ul class="summary-list">', items_html, "</ul>"])
     else:
         parts.append('<p class="empty">No entries.</p>')
-    parts.append('</div>')
+    parts.append("</div>")
     return "\n".join(parts)
+
 
 def _render_key_links(keys: Iterable[str], anchor_map: Dict[str, str]) -> str:
     """Creates a list of links pointing to diff sections for the given keys."""
@@ -25,6 +27,7 @@ def _render_key_links(keys: Iterable[str], anchor_map: Dict[str, str]) -> str:
         f'<li><a href="#diff-{html.escape(anchor_map[key])}"><code>{html.escape(key)}</code></a></li>'
         for key in keys
     )
+
 
 def _render_changed_links(keys: Iterable[str], anchor_map: Dict[str, str]) -> str:
     """Creates the list of anchors used in the changed summary column."""
@@ -46,6 +49,7 @@ def _render_changed_links(keys: Iterable[str], anchor_map: Dict[str, str]) -> st
         )
     return "".join(items)
 
+
 def render_summary_panel(diff: DiffResult, anchor_map: Dict[str, str]) -> str:
     """Builds the summary panel grouping added, removed, and changed keys."""
 
@@ -65,30 +69,32 @@ def render_summary_panel(diff: DiffResult, anchor_map: Dict[str, str]) -> str:
         ]
     )
 
-    summary_counts = (
-        "Added: {added}&nbsp;·&nbsp;Removed: {removed}&nbsp;·&nbsp;Changed: {changed}"
-    ).format(
-        added=len(diff.added),
-        removed=len(diff.removed),
-        changed=len(diff.changed),
-    )
+    summary_counts = f"Added: {len(diff.added)}&nbsp;·&nbsp;Removed: {len(diff.removed)}&nbsp;·&nbsp;Changed: {len(diff.changed)}"
 
     panel_parts = [
         '<section class="summary-panel page-section">',
         '<details class="panel-toggle summary-toggle" open>',
-        '<summary>SUMMARY</summary>',
+        "<summary>SUMMARY</summary>",
         '<div class="summary-body">',
         '<div class="summary-grid">',
         summary_cards,
-        '</div>',
+        "</div>",
     ]
 
     if not diff.has_differences:
         panel_parts.append('<p class="empty-state">No differences.</p>')
 
     panel_parts.extend(
-        ['<footer class="summary-footer">', summary_counts, '</footer>', '</div>', '</details>', '</section>']
+        [
+            '<footer class="summary-footer">',
+            summary_counts,
+            "</footer>",
+            "</div>",
+            "</details>",
+            "</section>",
+        ]
     )
     return "\n".join(panel_parts)
+
 
 __all__ = ["render_summary_panel"]

@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterable, List
 
 from ._diff_data import diff_lines, prepare_serialized_for_diff
 
+
 def render_diff_lines(lines: Iterable[str], truncated: bool) -> str:
     """Turns diff lines into HTML spans with contextual classes."""
 
@@ -31,9 +32,7 @@ def render_diff_lines(lines: Iterable[str], truncated: bool) -> str:
     return "\n".join(rendered)
 
 
-def render_truncated_details(
-    old_full: str | None, new_full: str | None, status: str
-) -> str:
+def render_truncated_details(old_full: str | None, new_full: str | None, status: str) -> str:
     """Renders expandable panels containing full values when truncated."""
 
     if old_full is None and new_full is None and status != "removed":
@@ -52,7 +51,7 @@ def render_truncated_details(
                 [
                     '<div class="truncated-column">',
                     '<h4 class="truncated-title">Old value</h4>',
-                    f'<pre>{html.escape(old_full)}</pre>',
+                    f"<pre>{html.escape(old_full)}</pre>",
                     "</div>",
                 ]
             )
@@ -65,7 +64,7 @@ def render_truncated_details(
                 [
                     f'<div class="truncated-column {new_column_class}">',
                     '<h4 class="truncated-title">New value</h4>',
-                    f'<pre>{html.escape(new_full)}</pre>',
+                    f"<pre>{html.escape(new_full)}</pre>",
                     "</div>",
                 ]
             )
@@ -76,7 +75,7 @@ def render_truncated_details(
                 [
                     f'<div class="truncated-column {new_column_class}">',
                     '<h4 class="truncated-title">New value</h4>',
-                    '<pre>No new value (entry removed).</pre>',
+                    "<pre>No new value (entry removed).</pre>",
                     "</div>",
                 ]
             )
@@ -88,13 +87,14 @@ def render_truncated_details(
     return "".join(
         [
             '<details class="truncated-details">',
-            '<summary>Show full content</summary>',
+            "<summary>Show full content</summary>",
             '<div class="truncated-wrapper">',
             "".join(columns),
             "</div>",
             "</details>",
         ]
     )
+
 
 def render_diff_section(entry: Dict[str, Any]) -> str:
     """Renders the HTML section containing the formatted diff for one key."""
@@ -110,7 +110,11 @@ def render_diff_section(entry: Dict[str, Any]) -> str:
     new_lines = new_serialized.splitlines(keepends=True)
     diff_result = diff_lines(old_lines, new_lines)
     cleaned_lines = list(diff_result)
-    if len(cleaned_lines) >= 2 and cleaned_lines[0].startswith("---") and cleaned_lines[1].startswith("+++"):
+    if (
+        len(cleaned_lines) >= 2
+        and cleaned_lines[0].startswith("---")
+        and cleaned_lines[1].startswith("+++")
+    ):
         cleaned_lines = cleaned_lines[2:]
 
     diff_html = render_diff_lines(cleaned_lines, truncated_old or truncated_new)
@@ -136,6 +140,7 @@ def render_diff_section(entry: Dict[str, Any]) -> str:
 
     return "\n".join(section_parts)
 
+
 def render_git_sections(entries: List[Dict[str, Any]]) -> str:
     """Renders the diff sections for the provided entries."""
 
@@ -145,17 +150,18 @@ def render_git_sections(entries: List[Dict[str, Any]]) -> str:
     parts: List[str] = [
         '<section class="gitdiff-container page-section">',
         '<details class="panel-toggle diff-toggle" open>',
-        '<summary>DIFF</summary>',
+        "<summary>DIFF</summary>",
         '<div class="gitdiff-body">',
         '<pre class="gitdiff gitdiff-legend">',
         '<span class="ctx">--- old</span>',
         '<span class="ctx">+++ new</span>',
-        '</pre>',
+        "</pre>",
     ]
 
     parts.extend(render_diff_section(entry) for entry in entries)
-    parts.extend(['</div>', '</details>', '</section>'])
+    parts.extend(["</div>", "</details>", "</section>"])
     return "\n".join(parts)
+
 
 __all__ = [
     "render_diff_lines",
