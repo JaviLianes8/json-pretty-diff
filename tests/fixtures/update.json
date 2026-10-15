@@ -1,0 +1,10 @@
+{
+  "name": "json-pretty-diff",
+  "version": "1.1.0",
+  "tags": ["json", "diff", "html"],
+  "owner": {"name": "Ana", "city": "Madrid"},
+  "notes": "<i>italic</i> & 'single'",
+  "build number": 8,
+  "homepage": "https://example.com/ñ",
+  "empty": {}
+}

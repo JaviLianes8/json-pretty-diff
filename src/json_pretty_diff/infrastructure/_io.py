@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import io
 import json
 import sys
 from pathlib import Path
@@ -60,21 +59,22 @@ def write_report_to_stream(html_report: str, stream: Optional[TextIO] = None) ->
     """Writes the report to stdout as UTF-8, the charset its ``<meta>`` declares.
 
     A redirected stdout on Windows uses the console code page, which cannot encode most of
-    the page; the bytes go through a UTF-8 wrapper on the stream's own buffer instead.
+    the page. The stream is switched to UTF-8 for the report and switched back afterwards;
+    its newline handling is left as it is.
     """
 
     target = sys.stdout if stream is None else stream
-    buffer = getattr(target, "buffer", None)
-    if buffer is None:
+    reconfigure = getattr(target, "reconfigure", None)
+    if reconfigure is None:
         target.write(html_report)
         return
-    target.flush()
-    wrapper = io.TextIOWrapper(buffer, encoding="utf-8", errors="backslashreplace")
+    encoding, errors = target.encoding, target.errors
+    reconfigure(encoding="utf-8", errors="backslashreplace")
     try:
-        wrapper.write(html_report)
-        wrapper.flush()
+        target.write(html_report)
+        target.flush()
     finally:
-        wrapper.detach()
+        reconfigure(encoding=encoding, errors=errors)
 
 
 def write_line(text: str, stream: Optional[TextIO] = None) -> None:

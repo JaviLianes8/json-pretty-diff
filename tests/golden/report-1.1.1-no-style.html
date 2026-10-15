@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JSON Pretty Diff</title>
+
+</head>
+<body>
+<header class="branding">
+<div class="branding__links"><a class="branding__link" href="https://www.linkedin.com/in/jlianes/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" alt="LinkedIn icon" width="32" height="32" loading="lazy" /></a><a class="branding__link" href="https://github.com/JaviLianes8/json-pretty-diff" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><img src="https://cdn.simpleicons.org/github/181717" alt="GitHub icon" width="32" height="32" loading="lazy" /></a><a class="branding__link" href="https://buymeacoffee.com/jlianesglrs" target="_blank" rel="noopener noreferrer" aria-label="Buy Me a Coffee"><img src="https://cdn.simpleicons.org/buymeacoffee/FFDD00" alt="Buy Me a Coffee icon" width="32" height="32" loading="lazy" /></a></div>
+<p class="branding__signature">Made with love by Javier Lianes García in Aranjuez <span class="branding__heart" role="img" aria-label="love">❤️</span></p>
+</header>
+<h1>JSON Pretty Diff</h1>
+<p style="color: #64748b; font-size: 0.9rem;">Generated on TIMESTAMP &mdash; v1.1.1</p>
+<section class="summary-panel page-section">
+<details class="panel-toggle summary-toggle" open>
+<summary>SUMMARY</summary>
+<div class="summary-body">
+<div class="summary-grid">
+<div class="summary-card added">
+<h4 class="summary-title">Added</h4>
+<ul class="summary-list">
+<li><a href="#diff-empty"><code>empty</code></a></li><li><a href="#diff-homepage"><code>homepage</code></a></li>
+</ul>
+</div>
+<div class="summary-card removed">
+<h4 class="summary-title">Removed</h4>
+<ul class="summary-list">
+<li><a href="#diff-legacy"><code>legacy</code></a></li>
+</ul>
+</div>
+<div class="summary-card changed">
+<h4 class="summary-title">Changed</h4>
+<ul class="summary-list">
+<li><a href="#diff-build-number" class="change-link"><span class="change-key"><code>build number</code></span></a></li><li><a href="#diff-notes" class="change-link"><span class="change-key"><code>notes</code></span></a></li><li><a href="#diff-owner" class="change-link"><span class="change-key"><code>owner</code></span></a></li><li><a href="#diff-tags" class="change-link"><span class="change-key"><code>tags</code></span></a></li><li><a href="#diff-version" class="change-link"><span class="change-key"><code>version</code></span></a></li>
+</ul>
+</div>
+</div>
+<footer class="summary-footer">
+Added: 2&nbsp;·&nbsp;Removed: 1&nbsp;·&nbsp;Changed: 5
+</footer>
+</div>
+</details>
+</section>
+<section class="gitdiff-container page-section">
+<details class="panel-toggle diff-toggle" open>
+<summary>DIFF</summary>
+<div class="gitdiff-body">
+<pre class="gitdiff gitdiff-legend">
+<span class="ctx">--- old</span>
+<span class="ctx">+++ new</span>
+</pre>
+<section id="diff-empty" class="gitdiff-block added">
+<h3><code>empty</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -0,0 +1 @@</span>
+<span class="add">+{}</span></pre>
+</section>
+<section id="diff-homepage" class="gitdiff-block added">
+<h3><code>homepage</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -0,0 +1 @@</span>
+<span class="add">+&quot;https://example.com/ñ&quot;</span></pre>
+</section>
+<section id="diff-legacy" class="gitdiff-block removed">
+<h3><code>legacy</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1 +0,0 @@</span>
+<span class="del">-true</span></pre>
+</section>
+<section id="diff-build-number" class="gitdiff-block changed">
+<h3><code>build number</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1 +1 @@</span>
+<span class="del">-7</span>
+<span class="add">+8</span></pre>
+</section>
+<section id="diff-notes" class="gitdiff-block changed">
+<h3><code>notes</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1 +1 @@</span>
+<span class="del">-&quot;&lt;b&gt;bold&lt;/b&gt; &amp; \&quot;quoted\&quot;&quot;</span>
+<span class="add">+&quot;&lt;i&gt;italic&lt;/i&gt; &amp; &#x27;single&#x27;&quot;</span></pre>
+</section>
+<section id="diff-owner" class="gitdiff-block changed">
+<h3><code>owner</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1,4 +1,4 @@</span>
+<span class="ctx"> {
+</span>
+<span class="del">-  &quot;city&quot;: &quot;Aranjuez&quot;,
+</span>
+<span class="add">+  &quot;city&quot;: &quot;Madrid&quot;,
+</span>
+<span class="ctx">   &quot;name&quot;: &quot;Ana&quot;
+</span>
+<span class="ctx"> }</span></pre>
+</section>
+<section id="diff-tags" class="gitdiff-block changed">
+<h3><code>tags</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1,4 +1,5 @@</span>
+<span class="ctx"> [
+</span>
+<span class="ctx">   &quot;json&quot;,
+</span>
+<span class="del">-  &quot;diff&quot;
+</span>
+<span class="add">+  &quot;diff&quot;,
+</span>
+<span class="add">+  &quot;html&quot;
+</span>
+<span class="ctx"> ]</span></pre>
+</section>
+<section id="diff-version" class="gitdiff-block changed">
+<h3><code>version</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1 +1 @@</span>
+<span class="del">-&quot;1.0.0&quot;</span>
+<span class="add">+&quot;1.1.0&quot;</span></pre>
+</section>
+</div>
+</details>
+</section>
+<section class="full-json-section page-section">
+<details class="panel-toggle full-json-details" open>
+<summary>FULL JSON</summary>
+<div class="full-json-wrapper">
+<div class="full-json-filter">
+<div class="full-json-filter__field">
+<label for="full-json-filter" class="full-json-filter__label">Search</label>
+<input id="full-json-filter" class="full-json-filter__input" type="search" placeholder="Type to highlight..." data-json-filter="true" data-json-target="full-json-table" />
+</div>
+<table id="full-json-table" class="full-json-table">
+<thead>
+<tr>
+<th>Old JSON</th>
+<th>New JSON</th>
+</tr>
+</thead>
+<tbody>
+<tr><td class="code-cell left"><pre>{</pre></td><td class="code-cell neutral"><pre>{</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;build number&quot;: 7,</pre></td><td class="code-cell diff-modified"><pre>  &quot;build number&quot;: 8,</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;legacy&quot;: true,</pre></td><td class="code-cell diff-modified"><pre>  &quot;empty&quot;: {},</pre></td></tr>
+<tr><td class="code-cell left"><pre>&nbsp;</pre></td><td class="code-cell diff-modified"><pre>  &quot;homepage&quot;: &quot;https://example.com/ñ&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;name&quot;: &quot;json-pretty-diff&quot;,</pre></td><td class="code-cell neutral"><pre>  &quot;name&quot;: &quot;json-pretty-diff&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;notes&quot;: &quot;&lt;b&gt;bold&lt;/b&gt; &amp; \&quot;quoted\&quot;&quot;,</pre></td><td class="code-cell diff-modified"><pre>  &quot;notes&quot;: &quot;&lt;i&gt;italic&lt;/i&gt; &amp; &#x27;single&#x27;&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;owner&quot;: {</pre></td><td class="code-cell neutral"><pre>  &quot;owner&quot;: {</pre></td></tr>
+<tr><td class="code-cell left"><pre>    &quot;city&quot;: &quot;Aranjuez&quot;,</pre></td><td class="code-cell diff-modified"><pre>    &quot;city&quot;: &quot;Madrid&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>    &quot;name&quot;: &quot;Ana&quot;</pre></td><td class="code-cell neutral"><pre>    &quot;name&quot;: &quot;Ana&quot;</pre></td></tr>
+<tr><td class="code-cell left"><pre>  },</pre></td><td class="code-cell neutral"><pre>  },</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;tags&quot;: [</pre></td><td class="code-cell neutral"><pre>  &quot;tags&quot;: [</pre></td></tr>
+<tr><td class="code-cell left"><pre>    &quot;json&quot;,</pre></td><td class="code-cell neutral"><pre>    &quot;json&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>    &quot;diff&quot;</pre></td><td class="code-cell diff-modified"><pre>    &quot;diff&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>&nbsp;</pre></td><td class="code-cell diff-modified"><pre>    &quot;html&quot;</pre></td></tr>
+<tr><td class="code-cell left"><pre>  ],</pre></td><td class="code-cell neutral"><pre>  ],</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;version&quot;: &quot;1.0.0&quot;</pre></td><td class="code-cell diff-modified"><pre>  &quot;version&quot;: &quot;1.1.0&quot;</pre></td></tr>
+<tr><td class="code-cell left"><pre>}</pre></td><td class="code-cell neutral"><pre>}</pre></td></tr>
+</tbody>
+</table>
+</div>
+</details>
+</section>
+<script>
+(function() {
+    var filterInput = document.querySelector('[data-json-filter][data-json-target="full-json-table"]');
+    var table = document.getElementById('full-json-table');
+    if (!filterInput || !table) {
+        return;
+    }
+    var preElements = table.querySelectorAll('tbody pre');
+    Array.prototype.forEach.call(preElements, function(pre) {
+        pre.setAttribute('data-original-text', pre.textContent || '');
+    });
+    var filterContainer = filterInput.closest('.full-json-filter');
+    var matches = [];
+
+    function escapeHtml(value) {
+        return value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function highlightText(text, query) {
+        if (!query) {
+            return escapeHtml(text);
+        }
+        var lowerText = text.toLowerCase();
+        var lowerQuery = query.toLowerCase();
+        var result = '';
+        var lastIndex = 0;
+        var index = lowerText.indexOf(lowerQuery);
+        while (index !== -1) {
+            result += escapeHtml(text.slice(lastIndex, index));
+            result += '<mark class="full-json-highlight">' + escapeHtml(text.slice(index, index + query.length)) + '</mark>';
+            lastIndex = index + query.length;
+            index = lowerText.indexOf(lowerQuery, lastIndex);
+        }
+        result += escapeHtml(text.slice(lastIndex));
+        return result;
+    }
+
+    function ensureMatchVisible(target) {
+        if (!target) {
+            return;
+        }
+        if (!filterContainer) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+            return;
+        }
+
+        var spacer = 16; // Match the 1rem top offset applied via CSS.
+        var filterRect = filterContainer.getBoundingClientRect();
+        var offset;
+
+        if (filterRect.top <= spacer) {
+            offset = filterRect.bottom + spacer;
+        } else {
+            offset = filterRect.top + filterRect.height + spacer;
+        }
+
+        var targetRect = target.getBoundingClientRect();
+        var absoluteTop = window.scrollY + targetRect.top;
+        var desiredTop = Math.max(absoluteTop - offset, 0);
+
+        if (typeof window.scrollTo === 'function') {
+            window.scrollTo({ top: desiredTop, behavior: 'smooth' });
+        } else {
+            window.scroll(0, desiredTop);
+        }
+    }
+
+    function performSearch(query) {
+        Array.prototype.forEach.call(preElements, function(pre) {
+            var original = pre.getAttribute('data-original-text');
+            if (original === null) {
+                original = pre.textContent || '';
+                pre.setAttribute('data-original-text', original);
+            }
+            pre.innerHTML = highlightText(original, query);
+        });
+        matches = Array.prototype.slice.call(table.querySelectorAll('mark.full-json-highlight'));
+        if (matches.length) {
+            ensureMatchVisible(matches[0]);
+        }
+    }
+
+    filterInput.addEventListener('input', function(event) {
+        performSearch(event.target.value);
+    });
+})();
+</script>
+</body>
+</html>

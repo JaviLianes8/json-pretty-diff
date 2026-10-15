@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JSON Pretty Diff</title>
+<style>
+        body { font-family: Arial, sans-serif; margin: 2rem; background: #f8fafc; color: #0f172a; }
+        .branding { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin: 1.5rem 0 2rem; }
+        .branding__links { display: flex; gap: 0.9rem; }
+        .branding__link img { border-radius: 50%; box-shadow: 0 6px 12px rgba(15, 23, 42, 0.18); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .branding__link:hover img { transform: translateY(-2px) scale(1.05); box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25); }
+        .branding__signature { margin: 0; font-weight: 500; color: #1e293b; }
+        .branding__heart { color: #ef4444; margin-left: 0.35rem; }
+        section { padding: 1rem; border: 1px solid #cbd5f5; border-radius: 12px; margin-bottom: 1.5rem; background: #ffffff; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08); }
+        section h2 { margin-top: 0; color: #0f172a; }
+        section ul { margin: 0; padding-left: 1.5rem; }
+        section.empty { color: #64748b; font-style: italic; background: #f1f5f9; border-style: dashed; }
+        footer { font-weight: bold; margin-top: 2rem; color: #0f172a; }
+        code {
+            font-family: "Fira Code", "Courier New", monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #0f172a;
+        }
+        a { color: #2563eb; text-decoration: none; }
+        a:hover { color: #1d4ed8; text-decoration: none; }
+        .summary-panel { padding: 1.75rem; border: 2px solid #cbd5f5; border-radius: 20px; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(226, 232, 240, 0.5), rgba(255, 255, 255, 0.95)); box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1); }
+        .panel-toggle { display: block; }
+        .panel-toggle summary { list-style: none; display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 1.15rem; margin: 0; color: #0f172a; cursor: pointer; letter-spacing: 0.05em; }
+        .panel-toggle summary::after { content: "−"; font-size: 1.35rem; line-height: 1; color: #475569; }
+        .panel-toggle:not([open]) summary::after { content: "+"; }
+        .panel-toggle summary::marker { display: none; }
+        .panel-toggle summary::-webkit-details-marker { display: none; }
+        .page-section { margin-bottom: 0; }
+        .page-section + .page-section { margin-top: 2rem; }
+        .summary-body { margin-top: 1.5rem; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-top: 1.25rem; }
+        .summary-card { display: block; border: 2px solid #cbd5f5; border-radius: 16px; padding: 1rem 1.25rem; background: #ffffff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .summary-card:hover { transform: translateY(-2px); box-shadow: 0 12px 22px rgba(15, 23, 42, 0.12); }
+        .summary-card.added { border-color: #22c55e; background: linear-gradient(135deg, rgba(187, 247, 208, 0.65), rgba(255, 255, 255, 0.95)); }
+        .summary-card.removed { border-color: #ef4444; background: linear-gradient(135deg, rgba(254, 202, 202, 0.65), rgba(255, 255, 255, 0.95)); }
+        .summary-card.changed { border-color: #f97316; background: linear-gradient(135deg, rgba(254, 215, 170, 0.65), rgba(255, 255, 255, 0.95)); }
+        .summary-title { margin: 0 0 0.75rem; font-weight: 600; font-size: 1.05rem; color: #0f172a; }
+        .summary-list { margin: 0; padding-left: 1.25rem; color: #1e293b; }
+        .summary-card .empty { margin: 0; color: #64748b; font-style: italic; }
+        .summary-footer { margin-top: 1.75rem; text-align: right; font-weight: 600; color: #1e293b; }
+        .empty-state { margin-top: 1.5rem; color: #64748b; font-style: italic; }
+        .gitdiff-container { border: 1px solid #cbd5f5; border-radius: 16px; padding: 1.5rem; background: #ffffff; box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12); }
+        .gitdiff-body { margin-top: 1.25rem; }
+        .gitdiff-legend { margin: 0.5rem 0 1rem; border-radius: 10px; background: #f1f5f9; padding: 0.75rem 1rem; display: inline-block; }
+        .gitdiff-legend span { display: block; font-weight: 600; color: #475569; }
+        .gitdiff-block { border: 1px solid #cbd5f5; border-radius: 12px; padding: 1rem 1.25rem; background: linear-gradient(135deg, rgba(224, 231, 255, 0.65), rgba(255, 255, 255, 0.95)); margin-top: 1rem; }
+        .gitdiff-block.added { border-color: #22c55e; background: linear-gradient(135deg, rgba(187, 247, 208, 0.7), rgba(236, 253, 245, 0.95)); }
+        .gitdiff-block.removed { border-color: #ef4444; background: linear-gradient(135deg, rgba(254, 202, 202, 0.7), rgba(254, 242, 242, 0.95)); }
+        .gitdiff-block.changed { border-color: #f97316; background: linear-gradient(135deg, rgba(254, 215, 170, 0.7), rgba(255, 247, 237, 0.95)); }
+        .gitdiff-block h3 { margin-top: 0; color: #0f172a; }
+        .gitdiff { font-family: "Fira Code", "Courier New", monospace; padding: 1rem; border-radius: 10px; background: #f1f5f9; color: #0f172a; overflow-x: auto; }
+        .gitdiff span { display: block; padding: 0.15rem 0.35rem; border-radius: 6px; }
+        .gitdiff .add { background: #dcfce7; color: #14532d; }
+        .gitdiff .del { background: #fee2e2; color: #991b1b; }
+        .gitdiff .ctx { color: #475569; }
+        .gitdiff .hunk { background: #dbeafe; color: #1d4ed8; font-weight: 600; }
+        .change-link { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; align-items: baseline; color: inherit; }
+        .change-key { font-weight: 600; }
+        .change-link code { color: inherit; }
+        .change-values { color: #475569; }
+        .change-link:hover { color: #1d4ed8; }
+        .change-link:hover code { color: inherit; }
+        .gitdiff-container a { color: inherit; text-decoration: none; }
+        .gitdiff-container a:hover { color: inherit; text-decoration: none; }
+        .truncated-details { margin-top: 1rem; display: block; }
+        .truncated-details summary { list-style: none; font-weight: 600; cursor: pointer; color: #1e293b; }
+        .truncated-details summary::marker { display: none; }
+        .truncated-details summary::-webkit-details-marker { display: none; }
+        .truncated-wrapper { margin-top: 0.75rem; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+        .truncated-column { border: 1px solid #cbd5f5; border-radius: 12px; background: #f8fafc; padding: 0.75rem; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5); }
+        .truncated-title { margin: 0 0 0.5rem; font-size: 0.95rem; color: #0f172a; }
+        .truncated-column.truncated-new { color: #0f172a; }
+        .truncated-column.truncated-new--added { background: #dcfce7; border-color: #22c55e; color: #14532d; }
+        .truncated-column.truncated-new--changed { background: #ffedd5; border-color: #f97316; color: #9a3412; }
+        .truncated-column.truncated-new--removed { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+        .truncated-column pre { margin: 0; font-family: "Fira Code", "Courier New", monospace; white-space: pre-wrap; word-break: break-word; color: inherit; }
+        .full-json-section { border: 1px solid #cbd5f5; border-radius: 16px; padding: 1.5rem; background: #ffffff; box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12); }
+        .full-json-details summary { color: #1e293b; }
+        .full-json-details summary:focus { outline: none; }
+        .full-json-details[open] .full-json-wrapper { margin-top: 1rem; }
+        .full-json-wrapper { overflow-x: auto; }
+        .full-json-filter {
+            position: sticky;
+            top: 1rem;
+            z-index: 5;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            justify-content: space-between;
+            width: 100%;
+            box-sizing: border-box;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(248, 250, 252, 0.94));
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 0.85rem;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
+            backdrop-filter: blur(4px);
+        }
+        .full-json-filter__field { display: flex; align-items: center; gap: 0.75rem; flex: 1 1 320px; min-width: 260px; }
+        .full-json-filter__label { font-weight: 600; color: #1e293b; white-space: nowrap; }
+        .full-json-filter__input { flex: 1 1 auto; min-width: 0; padding: 0.5rem 0.75rem; border: 1px solid #cbd5f5; border-radius: 0.75rem; background: #f8fafc; color: #0f172a; }
+        .full-json-filter__input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
+        .full-json-highlight { background: #fde68a; color: #7c2d12; border-radius: 0.35rem; padding: 0 0.2rem; box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.6); }
+        .full-json-table { width: 100%; border-collapse: collapse; }
+        .full-json-table th { text-align: left; padding: 0.75rem; background: #e2e8f0; color: #0f172a; }
+        .full-json-table td { padding: 0; vertical-align: top; }
+        .full-json-table td pre { margin: 0; padding: 0.5rem 0.75rem; font-family: "Fira Code", "Courier New", monospace; white-space: pre; background: transparent; color: inherit; }
+        .full-json-table .code-cell { border-top: 1px solid #e2e8f0; background: #ffffff; color: #0f172a; }
+        .full-json-table .code-cell.left { background: #ffffff; }
+        .full-json-table .code-cell.neutral { background: #ffffff; }
+        .full-json-table .code-cell.diff-added { background: #dcfce7; color: #14532d; }
+        .full-json-table .code-cell.diff-modified { background: #ffedd5; color: #9a3412; }
+        .full-json-table .code-cell.diff-removed { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+<header class="branding">
+<div class="branding__links"><a class="branding__link" href="https://www.linkedin.com/in/jlianes/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" alt="LinkedIn icon" width="32" height="32" loading="lazy" /></a><a class="branding__link" href="https://github.com/JaviLianes8/json-pretty-diff" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><img src="https://cdn.simpleicons.org/github/181717" alt="GitHub icon" width="32" height="32" loading="lazy" /></a><a class="branding__link" href="https://buymeacoffee.com/jlianesglrs" target="_blank" rel="noopener noreferrer" aria-label="Buy Me a Coffee"><img src="https://cdn.simpleicons.org/buymeacoffee/FFDD00" alt="Buy Me a Coffee icon" width="32" height="32" loading="lazy" /></a></div>
+<p class="branding__signature">Made with love by Javier Lianes García in Aranjuez <span class="branding__heart" role="img" aria-label="love">❤️</span></p>
+</header>
+<h1>JSON Pretty Diff</h1>
+<p style="color: #64748b; font-size: 0.9rem;">Generated on TIMESTAMP &mdash; v1.1.1</p>
+<section class="summary-panel page-section">
+<details class="panel-toggle summary-toggle" open>
+<summary>SUMMARY</summary>
+<div class="summary-body">
+<div class="summary-grid">
+<div class="summary-card added">
+<h4 class="summary-title">Added</h4>
+<ul class="summary-list">
+<li><a href="#diff-empty"><code>empty</code></a></li><li><a href="#diff-homepage"><code>homepage</code></a></li>
+</ul>
+</div>
+<div class="summary-card removed">
+<h4 class="summary-title">Removed</h4>
+<ul class="summary-list">
+<li><a href="#diff-legacy"><code>legacy</code></a></li>
+</ul>
+</div>
+<div class="summary-card changed">
+<h4 class="summary-title">Changed</h4>
+<ul class="summary-list">
+<li><a href="#diff-build-number" class="change-link"><span class="change-key"><code>build number</code></span></a></li><li><a href="#diff-notes" class="change-link"><span class="change-key"><code>notes</code></span></a></li><li><a href="#diff-owner" class="change-link"><span class="change-key"><code>owner</code></span></a></li><li><a href="#diff-tags" class="change-link"><span class="change-key"><code>tags</code></span></a></li><li><a href="#diff-version" class="change-link"><span class="change-key"><code>version</code></span></a></li>
+</ul>
+</div>
+</div>
+<footer class="summary-footer">
+Added: 2&nbsp;·&nbsp;Removed: 1&nbsp;·&nbsp;Changed: 5
+</footer>
+</div>
+</details>
+</section>
+<section class="gitdiff-container page-section">
+<details class="panel-toggle diff-toggle" open>
+<summary>DIFF</summary>
+<div class="gitdiff-body">
+<pre class="gitdiff gitdiff-legend">
+<span class="ctx">--- old</span>
+<span class="ctx">+++ new</span>
+</pre>
+<section id="diff-empty" class="gitdiff-block added">
+<h3><code>empty</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -0,0 +1 @@</span>
+<span class="add">+{}</span></pre>
+</section>
+<section id="diff-homepage" class="gitdiff-block added">
+<h3><code>homepage</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -0,0 +1 @@</span>
+<span class="add">+&quot;https://example.com/ñ&quot;</span></pre>
+</section>
+<section id="diff-legacy" class="gitdiff-block removed">
+<h3><code>legacy</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1 +0,0 @@</span>
+<span class="del">-true</span></pre>
+</section>
+<section id="diff-build-number" class="gitdiff-block changed">
+<h3><code>build number</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1 +1 @@</span>
+<span class="del">-7</span>
+<span class="add">+8</span></pre>
+</section>
+<section id="diff-notes" class="gitdiff-block changed">
+<h3><code>notes</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1 +1 @@</span>
+<span class="del">-&quot;&lt;b&gt;bold&lt;/b&gt; &amp; \&quot;quoted\&quot;&quot;</span>
+<span class="add">+&quot;&lt;i&gt;italic&lt;/i&gt; &amp; &#x27;single&#x27;&quot;</span></pre>
+</section>
+<section id="diff-owner" class="gitdiff-block changed">
+<h3><code>owner</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1,4 +1,4 @@</span>
+<span class="ctx"> {
+</span>
+<span class="del">-  &quot;city&quot;: &quot;Aranjuez&quot;,
+</span>
+<span class="add">+  &quot;city&quot;: &quot;Madrid&quot;,
+</span>
+<span class="ctx">   &quot;name&quot;: &quot;Ana&quot;
+</span>
+<span class="ctx"> }</span></pre>
+</section>
+<section id="diff-tags" class="gitdiff-block changed">
+<h3><code>tags</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1,4 +1,5 @@</span>
+<span class="ctx"> [
+</span>
+<span class="ctx">   &quot;json&quot;,
+</span>
+<span class="del">-  &quot;diff&quot;
+</span>
+<span class="add">+  &quot;diff&quot;,
+</span>
+<span class="add">+  &quot;html&quot;
+</span>
+<span class="ctx"> ]</span></pre>
+</section>
+<section id="diff-version" class="gitdiff-block changed">
+<h3><code>version</code></h3>
+<pre class="gitdiff"><span class="hunk">@@ -1 +1 @@</span>
+<span class="del">-&quot;1.0.0&quot;</span>
+<span class="add">+&quot;1.1.0&quot;</span></pre>
+</section>
+</div>
+</details>
+</section>
+<section class="full-json-section page-section">
+<details class="panel-toggle full-json-details" open>
+<summary>FULL JSON</summary>
+<div class="full-json-wrapper">
+<div class="full-json-filter">
+<div class="full-json-filter__field">
+<label for="full-json-filter" class="full-json-filter__label">Search</label>
+<input id="full-json-filter" class="full-json-filter__input" type="search" placeholder="Type to highlight..." data-json-filter="true" data-json-target="full-json-table" />
+</div>
+<table id="full-json-table" class="full-json-table">
+<thead>
+<tr>
+<th>Old JSON</th>
+<th>New JSON</th>
+</tr>
+</thead>
+<tbody>
+<tr><td class="code-cell left"><pre>{</pre></td><td class="code-cell neutral"><pre>{</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;build number&quot;: 7,</pre></td><td class="code-cell diff-modified"><pre>  &quot;build number&quot;: 8,</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;legacy&quot;: true,</pre></td><td class="code-cell diff-modified"><pre>  &quot;empty&quot;: {},</pre></td></tr>
+<tr><td class="code-cell left"><pre>&nbsp;</pre></td><td class="code-cell diff-modified"><pre>  &quot;homepage&quot;: &quot;https://example.com/ñ&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;name&quot;: &quot;json-pretty-diff&quot;,</pre></td><td class="code-cell neutral"><pre>  &quot;name&quot;: &quot;json-pretty-diff&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;notes&quot;: &quot;&lt;b&gt;bold&lt;/b&gt; &amp; \&quot;quoted\&quot;&quot;,</pre></td><td class="code-cell diff-modified"><pre>  &quot;notes&quot;: &quot;&lt;i&gt;italic&lt;/i&gt; &amp; &#x27;single&#x27;&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;owner&quot;: {</pre></td><td class="code-cell neutral"><pre>  &quot;owner&quot;: {</pre></td></tr>
+<tr><td class="code-cell left"><pre>    &quot;city&quot;: &quot;Aranjuez&quot;,</pre></td><td class="code-cell diff-modified"><pre>    &quot;city&quot;: &quot;Madrid&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>    &quot;name&quot;: &quot;Ana&quot;</pre></td><td class="code-cell neutral"><pre>    &quot;name&quot;: &quot;Ana&quot;</pre></td></tr>
+<tr><td class="code-cell left"><pre>  },</pre></td><td class="code-cell neutral"><pre>  },</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;tags&quot;: [</pre></td><td class="code-cell neutral"><pre>  &quot;tags&quot;: [</pre></td></tr>
+<tr><td class="code-cell left"><pre>    &quot;json&quot;,</pre></td><td class="code-cell neutral"><pre>    &quot;json&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>    &quot;diff&quot;</pre></td><td class="code-cell diff-modified"><pre>    &quot;diff&quot;,</pre></td></tr>
+<tr><td class="code-cell left"><pre>&nbsp;</pre></td><td class="code-cell diff-modified"><pre>    &quot;html&quot;</pre></td></tr>
+<tr><td class="code-cell left"><pre>  ],</pre></td><td class="code-cell neutral"><pre>  ],</pre></td></tr>
+<tr><td class="code-cell left"><pre>  &quot;version&quot;: &quot;1.0.0&quot;</pre></td><td class="code-cell diff-modified"><pre>  &quot;version&quot;: &quot;1.1.0&quot;</pre></td></tr>
+<tr><td class="code-cell left"><pre>}</pre></td><td class="code-cell neutral"><pre>}</pre></td></tr>
+</tbody>
+</table>
+</div>
+</details>
+</section>
+<script>
+(function() {
+    var filterInput = document.querySelector('[data-json-filter][data-json-target="full-json-table"]');
+    var table = document.getElementById('full-json-table');
+    if (!filterInput || !table) {
+        return;
+    }
+    var preElements = table.querySelectorAll('tbody pre');
+    Array.prototype.forEach.call(preElements, function(pre) {
+        pre.setAttribute('data-original-text', pre.textContent || '');
+    });
+    var filterContainer = filterInput.closest('.full-json-filter');
+    var matches = [];
+
+    function escapeHtml(value) {
+        return value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function highlightText(text, query) {
+        if (!query) {
+            return escapeHtml(text);
+        }
+        var lowerText = text.toLowerCase();
+        var lowerQuery = query.toLowerCase();
+        var result = '';
+        var lastIndex = 0;
+        var index = lowerText.indexOf(lowerQuery);
+        while (index !== -1) {
+            result += escapeHtml(text.slice(lastIndex, index));
+            result += '<mark class="full-json-highlight">' + escapeHtml(text.slice(index, index + query.length)) + '</mark>';
+            lastIndex = index + query.length;
+            index = lowerText.indexOf(lowerQuery, lastIndex);
+        }
+        result += escapeHtml(text.slice(lastIndex));
+        return result;
+    }
+
+    function ensureMatchVisible(target) {
+        if (!target) {
+            return;
+        }
+        if (!filterContainer) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+            return;
+        }
+
+        var spacer = 16; // Match the 1rem top offset applied via CSS.
+        var filterRect = filterContainer.getBoundingClientRect();
+        var offset;
+
+        if (filterRect.top <= spacer) {
+            offset = filterRect.bottom + spacer;
+        } else {
+            offset = filterRect.top + filterRect.height + spacer;
+        }
+
+        var targetRect = target.getBoundingClientRect();
+        var absoluteTop = window.scrollY + targetRect.top;
+        var desiredTop = Math.max(absoluteTop - offset, 0);
+
+        if (typeof window.scrollTo === 'function') {
+            window.scrollTo({ top: desiredTop, behavior: 'smooth' });
+        } else {
+            window.scroll(0, desiredTop);
+        }
+    }
+
+    function performSearch(query) {
+        Array.prototype.forEach.call(preElements, function(pre) {
+            var original = pre.getAttribute('data-original-text');
+            if (original === null) {
+                original = pre.textContent || '';
+                pre.setAttribute('data-original-text', original);
+            }
+            pre.innerHTML = highlightText(original, query);
+        });
+        matches = Array.prototype.slice.call(table.querySelectorAll('mark.full-json-highlight'));
+        if (matches.length) {
+            ensureMatchVisible(matches[0]);
+        }
+    }
+
+    filterInput.addEventListener('input', function(event) {
+        performSearch(event.target.value);
+    });
+})();
+</script>
+</body>
+</html>

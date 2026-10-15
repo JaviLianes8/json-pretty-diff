@@ -2,12 +2,12 @@
 
 Progress:
 - [x] Brainstorm ranked improvements (this file)
-- [ ] Pin the ground truth: RFC 8259
-- [ ] Comparison: booleans versus numbers, NaN against itself
-- [ ] Report: unique section anchors, unencodable characters
-- [ ] Command line: Python 3.9 import, stdout encoding, read and write errors, byte order mark, deep nesting
+- [x] Pin the ground truth: RFC 8259
+- [x] Comparison: booleans versus numbers, NaN against itself
+- [x] Report: unique section anchors, unencodable characters
+- [x] Command line: Python 3.9 import, stdout encoding, read and write errors, byte order mark, deep nesting
 - [ ] Tests and coverage, contracts, pinned sources
-- [ ] Typing: mypy --strict, py.typed
+- [x] Typing: mypy --strict, py.typed
 - [ ] Docs: README factual fixes, CHANGELOG
 - [ ] Gates: ruff format, ruff check, mypy --strict, pytest on 3.8 to 3.14
 - [ ] Mutation run
