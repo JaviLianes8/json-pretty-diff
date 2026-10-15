@@ -1,0 +1,11 @@
+{
+  "rfc8259.txt": {
+    "title": "RFC 8259, The JavaScript Object Notation (JSON) Data Interchange Format (December 2017)",
+    "url": "https://www.rfc-editor.org/rfc/rfc8259.txt",
+    "revision": "RFC 8259 as published by the RFC Editor",
+    "licence": "IETF Trust Legal Provisions, Simplified BSD for code components (https://trustee.ietf.org/license-info)",
+    "fetched": "2026-10-15",
+    "size": 28360,
+    "sha256": "61a5378f4255c720beb2a4b4a63b29540147c140f36988bf086291989b4cd2d7"
+  }
+}

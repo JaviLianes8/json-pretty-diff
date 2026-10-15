@@ -23,6 +23,7 @@ SOCIAL_LINKS: Tuple[Tuple[str, str, str], ...] = (
     ),
 )
 
+
 def _render_social_link(label: str, href: str, icon: str) -> str:
     """Builds the anchor tag for a single social link."""
 
@@ -34,7 +35,7 @@ def _render_social_link(label: str, href: str, icon: str) -> str:
         f'href="{safe_href}" '
         'target="_blank" '
         'rel="noopener noreferrer" '
-        f'aria-label="{safe_label}">'  # noqa: DASA100 - keep formatting simple
+        f'aria-label="{safe_label}">'
         f'<img src="{safe_icon}" alt="{html.escape(label)} icon" '
         'width="32" height="32" loading="lazy" />'
         "</a>"
@@ -53,15 +54,16 @@ def render_branding_header() -> str:
     return "\n".join(
         [
             '<header class="branding">',
-            f"<div class=\"branding__links\">{_render_social_links(SOCIAL_LINKS)}</div>",
+            f'<div class="branding__links">{_render_social_links(SOCIAL_LINKS)}</div>',
             (
                 '<p class="branding__signature">'
-                'Made with love by Javier Lianes García in Aranjuez '
+                "Made with love by Javier Lianes García in Aranjuez "
                 '<span class="branding__heart" role="img" aria-label="love">❤️</span>'
-                '</p>'
+                "</p>"
             ),
-            '</header>',
+            "</header>",
         ]
     )
 
-__all__ = ["render_branding_header", "SOCIAL_LINKS"]
+
+__all__ = ["SOCIAL_LINKS", "render_branding_header"]
