@@ -11,6 +11,6 @@ Progress:
 - [x] Docs: README additions, GUIDE, CHANGELOG 1.2.0 (items 11, 12)
 - [ ] Gates on every interpreter of this PC (items 10, 15)
 - [ ] Packaging, wheel e2e and upgrade from PyPI 1.1.1 (items 8, 13, 14)
-- [ ] Author mutation round (item 18)
+- [x] Author mutation round 1 (item 18): 46 mutants, 41 killed, 5 survivors killed by new contracts in 5c8214c (confirmed)
 - [ ] Five QA lenses PASS, independent review (items 16, 19)
 - [ ] PR and trace guard CLEAN (item 17); merge and publish left to the maintainer
