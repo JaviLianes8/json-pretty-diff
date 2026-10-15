@@ -39,8 +39,8 @@ notes.
   and `jpd` exits with 2; with `-o` the report is written and the status line skipped.
 - Line matching for the diff blocks and the full JSON table is bounded by a work budget (10
   million steps of `difflib`'s inner loop, a few seconds at most). Input past the budget, such
-  as an array of 16,000 values repeating 150 numbers (about two minutes in 1.1.1, about a
-  second now), shows the part between the lines both sides share at the start and at the end
+  as an array of 16,000 values repeating 150 numbers (about two minutes in 1.1.1, a few
+  seconds now), shows the part between the lines both sides share at the start and at the end
   as one replacement. Input within the budget gives exactly the lines 1.1.1 gave.
 - Error and warning lines that the console cannot encode are written with backslash escapes
   instead of failing.
