@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Optional, TextIO
 
+_UTF16_MARKS = (b"\xff\xfe", b"\xfe\xff")
+
 
 class InputOutputError(Exception):
     """A file could not be read or written; the message follows ``Error:``."""
@@ -15,6 +17,8 @@ class InputOutputError(Exception):
 def load_json_object(path: Path) -> Dict[str, Any]:
     """Reads a UTF-8 JSON file whose root is an object."""
 
+    if path.is_dir():
+        raise InputOutputError(f"Cannot read {path}: it is a directory")
     try:
         raw = path.read_bytes()
     except FileNotFoundError as error:
@@ -26,7 +30,8 @@ def load_json_object(path: Path) -> Dict[str, Any]:
         # RFC 8259 section 8.1: JSON is UTF-8 and a parser may ignore a byte order mark.
         text = raw.decode("utf-8-sig")
     except UnicodeDecodeError as error:
-        message = f"Invalid JSON in {path}: not UTF-8 text (byte {error.start})"
+        hint = " (it looks like UTF-16)" if raw[:2] in _UTF16_MARKS else ""
+        message = f"Invalid JSON in {path}: not UTF-8 text (byte {error.start}){hint}"
         raise InputOutputError(message) from error
 
     try:
@@ -37,7 +42,8 @@ def load_json_object(path: Path) -> Dict[str, Any]:
         raise InputOutputError(f"Invalid JSON in {path}: nested too deeply") from error
     except ValueError as error:
         # Integers longer than the interpreter's digit limit (Python 3.11 and later).
-        raise InputOutputError(f"Invalid JSON in {path}: {error}") from error
+        message = f"Invalid JSON in {path}: an integer has more digits than Python reads"
+        raise InputOutputError(message) from error
 
     if not isinstance(data, dict):
         raise InputOutputError(f"The root element of {path} must be a JSON object.")
@@ -47,6 +53,8 @@ def load_json_object(path: Path) -> Dict[str, Any]:
 def write_report(path: Path, html_report: str) -> None:
     """Writes the report as UTF-8, creating the parent folders."""
 
+    if path.is_dir():
+        raise InputOutputError(f"Cannot write {path}: it is a directory")
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         # Lone surrogates from "\udXXX" escapes cannot be UTF-8; keep them visible as escapes.
@@ -72,7 +80,6 @@ def write_report_to_stream(html_report: str, stream: Optional[TextIO] = None) ->
     reconfigure(encoding="utf-8", errors="backslashreplace")
     try:
         target.write(html_report)
-        target.flush()
     finally:
         reconfigure(encoding=encoding, errors=errors)
 
