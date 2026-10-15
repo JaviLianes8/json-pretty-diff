@@ -1,8 +1,7 @@
 """Line matching for the diff blocks and the full JSON table, bounded in time.
 
-``difflib.SequenceMatcher`` can take time growing with the square of the input: a shuffled
-array of 100,000 numbers, or a long array of a few hundred repeated values, took minutes in
-1.1.1. The matcher here is ``difflib``'s own, counting the steps of its inner loop; when the
+``difflib.SequenceMatcher`` can take time growing with the square of the input: an array of
+16,000 values repeating 150 numbers took about two minutes in 1.1.1. The matcher here is ``difflib``'s own, counting the steps of its inner loop; when the
 count passes a budget, the part between the lines both sides share at the start and at the
 end is reported as one replacement. Below the budget the result is exactly ``difflib``'s.
 """
@@ -15,8 +14,9 @@ from typing import Iterator, List, Literal, Optional, Sequence, Tuple
 Tag = Literal["replace", "delete", "insert", "equal"]
 Opcode = Tuple[Tag, int, int, int, int]
 
-# Inner-loop steps allowed for one matching, about a second of work.
-STEP_BUDGET = 3_000_000
+# Inner-loop steps allowed for one matching: about three seconds of work at worst. A shuffled
+# array of 100,000 numbers needs about 5 million and stays below it.
+STEP_BUDGET = 10_000_000
 
 
 class _OverBudget(Exception):

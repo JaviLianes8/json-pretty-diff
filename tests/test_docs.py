@@ -29,7 +29,7 @@ def _table_rows() -> list[tuple[str, str, str]]:
     text = (ROOT / "GUIDE.md").read_text(encoding="utf-8")
     table = text[text.index("| Old | New | Result |") :].split("\n\n", 1)[0]
     rows = re.findall(r"^\| `([^`]*)` \| `([^`]*)` \| (\w+)", table, re.M)
-    assert len(rows) == 10
+    assert len(rows) == 11
     return rows
 
 

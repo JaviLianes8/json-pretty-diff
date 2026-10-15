@@ -7,6 +7,7 @@ import json
 from typing import Any, List
 
 from ...domain.models import DiffResult
+from ._diff_data import split_lines
 from ._matching import line_opcodes
 
 FULL_JSON_TABLE_ID = "full-json-table"
@@ -71,8 +72,8 @@ def render_full_json_section(diff: DiffResult) -> str:
     old_serialized = _serialize_full_json(diff.source_snapshot)
     new_serialized = _serialize_full_json(diff.target_snapshot)
 
-    old_lines = old_serialized.splitlines()
-    new_lines = new_serialized.splitlines()
+    old_lines = split_lines(old_serialized)
+    new_lines = split_lines(new_serialized)
     table_rows = _build_side_by_side_rows(old_lines, new_lines)
 
     table_id = FULL_JSON_TABLE_ID

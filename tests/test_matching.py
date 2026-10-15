@@ -100,7 +100,7 @@ def test_hunk_ranges_are_written_like_difflib() -> None:
 
 @pytest.mark.parametrize("size", [16_000, 100_000])
 def test_shuffled_and_repetitive_arrays_render_in_bounded_time(size: int) -> None:
-    # 1.1.1 took over a minute on the 16,000-value array and minutes on the shuffled one.
+    # 1.1.1 took about two minutes on the 16,000-value array; the shuffled one stays in budget.
     repetitive = ([i % 150 for i in range(16_000)], [(i * 7) % 150 for i in range(16_000)])
     shuffled = (list(range(size)), [(i * 7919) % size for i in range(size)])
     for old, new in (repetitive, shuffled):
@@ -108,4 +108,4 @@ def test_shuffled_and_repetitive_arrays_render_in_bounded_time(size: int) -> Non
         page = render_html(compute_top_level_diff({"x": old}, {"x": new}))
         assert time.perf_counter() - start < 30
         assert page.endswith("</html>")
-    assert STEP_BUDGET == 3_000_000
+    assert STEP_BUDGET == 10_000_000

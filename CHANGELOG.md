@@ -13,6 +13,8 @@ import keep working. This release is stable: the names in `json_pretty_diff.__al
 notes.
 
 ### Changed (results that differ from 1.1.1 for the same input)
+- Input that 1.1.1 refused or crashed on is listed under Added and Fixed: a byte order mark,
+  text that is not UTF-8, lone surrogate escapes, very long integers and very deep nesting.
 - `true` and `1`, or `false` and `0`, at any depth, are reported as changed (RFC 8259 keeps
   them as different value types). 1.1.1 reported no difference and exited with 0.
 - A document with `NaN` compared with itself no longer reports a change (exit 0, was 1).
@@ -35,11 +37,11 @@ notes.
   prints `Error: Cannot write to standard output: ...` and exits with 2.
   Without any standard output (`pythonw`, a closed descriptor) the report cannot be shown
   and `jpd` exits with 2; with `-o` the report is written and the status line skipped.
-- Line matching for the diff blocks and the full JSON table is bounded in time. Input that
-  made 1.1.1 run for minutes (a shuffled array of 100,000 numbers, an array of 16,000 values
-  repeating a few hundred numbers) now renders in about a second, and the part of it between
-  the lines both sides share at the start and at the end is shown as one replacement. Any
-  other input gives exactly the lines 1.1.1 gave.
+- Line matching for the diff blocks and the full JSON table is bounded by a work budget (10
+  million steps of `difflib`'s inner loop, a few seconds at most). Input past the budget, such
+  as an array of 16,000 values repeating 150 numbers (about two minutes in 1.1.1, about a
+  second now), shows the part between the lines both sides share at the start and at the end
+  as one replacement. Input within the budget gives exactly the lines 1.1.1 gave.
 - Error and warning lines that the console cannot encode are written with backslash escapes
   instead of failing.
 
@@ -68,10 +70,12 @@ notes.
   and documents nested too deeply print `Error: ...` and exit with 2 instead of a traceback.
 - Errors name a directory given as input or output, and hint at UTF-16 input.
 - Lone surrogate escapes such as `"\ud800"` are written as `\ud800` instead of crashing.
+- A string holding U+2028, U+2029 or U+0085 stays on one row of the diff blocks and the full
+  JSON table; 1.1.1 split it there and dropped the character from the table.
 
 ### Unchanged on purpose
-- `1` and `1.0` compare as equal, and so do numbers that read as the same double
-  (`0.1` and `0.10000000000000001`).
+- `1` and `1.0` compare as equal, and so do numbers with a fraction or an exponent that
+  read as the same double (`0.1` and `0.10000000000000001`). Integers are read exactly.
 - Integers longer than Python's digit limit and documents nested too deeply for the report
   are still not compared; they now end in `Error: ...` and exit 2 (see Fixed).
 

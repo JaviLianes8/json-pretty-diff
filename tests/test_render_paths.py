@@ -11,6 +11,7 @@ from json_pretty_diff import cli
 from json_pretty_diff.domain.models import DiffResult
 from json_pretty_diff.domain.services import compute_top_level_diff
 from json_pretty_diff.presentation.html_renderer import render_html
+from json_pretty_diff.presentation.html_renderer._diff_data import split_lines
 from json_pretty_diff.presentation.html_renderer._diff_view import render_diff_lines
 
 
@@ -63,3 +64,22 @@ def test_a_long_new_value_alone_gets_the_full_content_panel() -> None:
     report = render_html(compute_top_level_diff({"k": "short"}, {"k": "y" * 10_001}))
     assert '<details class="truncated-details">' in report
     assert "New value" in report and "Old value" not in report
+
+
+@pytest.mark.parametrize("separator", ["\u2028", "\u2029", "\x85"])
+def test_unicode_line_separators_stay_inside_their_row(separator: str) -> None:
+    value = f"x{separator}y"
+    report = render_html(compute_top_level_diff({"a": value, "b": 1}, {"a": value, "b": 2}))
+    assert (
+        f'<td class="code-cell left"><pre>  &quot;a&quot;: &quot;x{separator}y&quot;,</pre>'
+        in report
+    )
+    report = render_html(compute_top_level_diff({"a": value}, {"a": value + "!"}))
+    assert f'<span class="del">-&quot;x{separator}y&quot;\n</span>' in report
+
+
+def test_split_lines_breaks_at_newlines_only() -> None:
+    assert split_lines("") == [] and split_lines("a\n") == ["a"]
+    assert split_lines("a\u2028b\nc") == ["a\u2028b", "c"]
+    assert split_lines("a\nb", keepends=True) == ["a\n", "b"]
+    assert split_lines("a\nb\n", keepends=True) == ["a\n", "b\n"]

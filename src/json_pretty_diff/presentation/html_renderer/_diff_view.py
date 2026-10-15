@@ -5,7 +5,7 @@ from __future__ import annotations
 import html
 from typing import Any, Dict, Iterable, List
 
-from ._diff_data import diff_lines, prepare_serialized_for_diff
+from ._diff_data import diff_lines, prepare_serialized_for_diff, split_lines
 
 
 def render_diff_lines(lines: Iterable[str], truncated: bool) -> str:
@@ -112,8 +112,8 @@ def render_diff_section(entry: Dict[str, Any]) -> str:
     old_serialized, truncated_old, old_full = prepare_serialized_for_diff(entry["old"])
     new_serialized, truncated_new, new_full = prepare_serialized_for_diff(entry["new"])
 
-    old_lines = old_serialized.splitlines(keepends=True)
-    new_lines = new_serialized.splitlines(keepends=True)
+    old_lines = split_lines(old_serialized, keepends=True)
+    new_lines = split_lines(new_serialized, keepends=True)
     diff_result = diff_lines(old_lines, new_lines)
     cleaned_lines = list(diff_result)
     if (

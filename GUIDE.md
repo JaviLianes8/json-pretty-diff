@@ -36,8 +36,13 @@ the files with its standard `json` module, and the comparison follows JSON's val
 | `0.1` | `0.10000000000000001` | equal (both read as the same double) |
 | `NaN` | `NaN` | equal (with a warning) |
 | `1e400` | `2e400` | equal (both beyond a double, read as infinity, with a warning) |
+| `9007199254740993` | `9007199254740992.0` | changed (integers are read exactly) |
 | `[1, 2]` | `[2, 1]` | changed (arrays keep their order) |
 | `{"a": 1, "b": 2}` | `{"b": 2, "a": 1}` | equal (object members have no order) |
+
+Integers (numbers without a fraction or exponent) are read exactly, however long, up to
+Python's digit limit; only numbers with a fraction or an exponent are read as doubles, and only
+they can overflow to infinity and get the range warning.
 
 Only the top-level keys are listed. Inside a changed key, the diff block shows every line that
 differs, however deep.
@@ -119,7 +124,7 @@ script. Documents nested deeper than Python's recursion limit raise `RecursionEr
 
 Line matching uses Python's `difflib`, whose running time can grow with the square of the
 input on some shapes (long arrays with repeated or shuffled values). `jpd` counts the work and,
-past a fixed budget (about a second), shows the part between the lines both sides share at the
+past a fixed budget (10 million steps of its inner loop, a few seconds at most), shows the part between the lines both sides share at the
 start and at the end as one replacement. Below the budget, the diff is exactly `difflib`'s.
 
 ## Upgrading from 1.1.1
