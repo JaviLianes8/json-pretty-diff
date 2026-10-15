@@ -90,12 +90,46 @@ def test_json_text_is_utf8(tmp_path: Path, capsys: Capture) -> None:
     assert "not UTF-8 text" in capsys.readouterr().err
 
 
-def test_object_names_should_be_unique_and_the_last_one_is_read(tmp_path: Path) -> None:
+def test_object_names_should_be_unique_and_the_last_one_is_read(
+    tmp_path: Path, capsys: Capture
+) -> None:
     # Section 4: names SHOULD be unique; with duplicates, Python's reader keeps the last one.
-    assert "The names within an object SHOULD be unique." in flat(upstream(RFC))
+    text = flat(upstream(RFC))
+    assert "The names within an object SHOULD be unique." in text
+    assert "Many implementations report the last name/value pair only." in text
     path = write_bytes(tmp_path / "d.json", b'{"a": 1, "a": 2}')
     other = write_bytes(tmp_path / "o.json", b'{"a": 2}')
     assert run_cli(path, other, "-q") == 0
+    assert run_cli(path, other, "-o", tmp_path / "r.html") == 0
+    assert capsys.readouterr().err == (
+        f"Warning: {path} repeats names inside an object, the last value is used "
+        '(RFC 8259 section 4): "a"\n'
+    )
+
+
+def test_nan_and_infinity_are_not_permitted_and_get_a_warning(
+    tmp_path: Path, capsys: Capture
+) -> None:
+    # Section 6 excludes them from the number grammar; jpd still compares, with a warning.
+    assert "(such as Infinity and NaN) are not permitted." in flat(upstream(RFC))
+    path = write_bytes(tmp_path / "n.json", b'{"a": NaN, "b": Infinity, "c": -Infinity}')
+    assert run_cli(path, path, "-o", tmp_path / "r.html") == 0
+    err = capsys.readouterr().err
+    assert err.startswith(f"Warning: {path} holds values RFC 8259 does not allow (section 6)")
+    assert err.endswith(": NaN, Infinity, -Infinity\n")
+
+
+def test_numbers_beyond_binary64_are_compared_as_infinity_with_a_warning(
+    tmp_path: Path, capsys: Capture
+) -> None:
+    # Section 6 lets implementations limit range and precision, pointing at IEEE 754 binary64.
+    text = flat(upstream(RFC))
+    assert "allows implementations to set limits on the range and precision of numbers" in text
+    assert "IEEE 754 binary64 (double precision)" in text
+    big = write_bytes(tmp_path / "b.json", b'{"a": 1e400}')
+    bigger = write_bytes(tmp_path / "c.json", b'{"a": 2e400}')
+    assert run_cli(big, bigger, "-o", tmp_path / "r.html") == 0
+    assert capsys.readouterr().err.count("beyond the range of a double") == 2
 
 
 def test_literal_names_are_distinct_from_each_other_and_from_numbers() -> None:
