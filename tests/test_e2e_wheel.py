@@ -59,6 +59,14 @@ def test_built_wheel_installs_and_runs(tmp_path: Path) -> None:
     with tarfile.open(sdist) as archive:
         members = archive.getnames()
     assert not [name for name in members if "tests/upstream/rfc" in name]
+    for needed in (
+        "tests/conftest.py",
+        "tests/golden/report-1.1.1.html",
+        "GUIDE.md",
+        "CHANGELOG.md",
+    ):
+        assert [name for name in members if name.endswith(needed)], needed
+    assert not [name for name in members if "__pycache__" in name or name.endswith(".pyc")]
     for notes in ("IMPROVEMENTS-round.md", "CERT-1.0-REPORT.md"):
         assert not [name for name in members if name.endswith(notes)]
 
