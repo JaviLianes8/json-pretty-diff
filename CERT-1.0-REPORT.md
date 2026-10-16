@@ -13,7 +13,7 @@ Progress:
 - [x] Packaging, wheel e2e and upgrade from PyPI 1.1.1 (items 8, 13, 14)
 - [x] Author mutation round (item 18): 46 mutants, 41 killed, 5 killed by new contracts
 - [x] Five QA lenses PASS (item 19)
-- [ ] Independent scorecard (item 16)
+- [x] Independent scorecard (item 16): 18 items PASS, item 17 pending, minor findings fixed in 992ff41
 - [ ] PR and release check clean (item 17); merge and publish left to the maintainer
 
 ## Scorecard
@@ -35,7 +35,7 @@ Progress:
 | 13 | pyproject 1.2.0, Production/Stable | PASS: SPDX `MIT`, classifiers 3.9 to 3.14, `Typing :: Typed`, Source, Issues, Changelog URLs, no runtime dependency |
 | 14 | sdist and wheel contents | PASS: 26-module wheel with `py.typed` and LICENSE; sdist with the full runnable test suite, docs, no notes or caches |
 | 15 | Gates each exit 0 | PASS: see Gates |
-| 16 | Independent scorecard | pending |
+| 16 | Independent scorecard | PASS: every item re-verified by running it at 82a0e0a (gates, doctests, build, `twine check`, contents, metadata, 3.9 and 3.14 suites, four extra mutants all killed); minor wording, CHANGELOG and docs findings fixed in 992ff41 |
 | 17 | PR and release check | pending |
 | 18 | Contracts bite (mutations) | PASS: see Mutation rounds |
 | 19 | Five independent QA lenses | PASS: see QA lenses |
@@ -154,7 +154,8 @@ code and reporting only to the maintainer. Bounded later rounds confirm the earl
 | b. Correctness and ground truth | 1 | 02068e1 | PASS (4 minor) | 4,000 seeded pairs against an independent parser and equality oracle, 4,215 diff blocks and 4,000 tables rebuilt, warnings exact, 318 differences from 1.1.1 all documented; minor: budget wording and a case it cut too early, exact integers undocumented, U+2028 family split rows, CHANGELOG layout; fixed in ea78120 and 46545a1 |
 | b | 2 | ea78120 | PASS | fixes confirmed, 500 fresh pairs, 0 failures |
 | c. Adversarial and robustness | 1 | 46545a1 | FAIL | cyclic Python structures never returned; minor: depth wording, raw control characters, long paths echoed, search highlight offset, UTF-32 hint, unclear type errors; fixed in b362db4, afc3274, 7b6cb9c |
-| c | 2 | afc3274 | PASS | fixes confirmed; injection set, 840 fuzz runs, no regression |
+| c | 2 | afc3274 | PASS | fixes confirmed; injection set, 840 fuzz runs, no regression; `warnings=None` note fixed in 7b6cb9c |
+| c | 3 | 992ff41 | PASS | `warnings=None` and the 1,000-character path cut (fde6cc6) confirmed, 420 more fuzz runs |
 | d. Packaging and real e2e | 1 | 7b6cb9c | PASS (1 minor) | wheel and sdist contents, metadata, 27 CLI cases from the wheel, upgrade from PyPI 1.1.1, sdist install, suite on seven interpreters; minor: CONTRIBUTING named two files missing from the sdist, fixed in c424db8 |
 | e. Contract strength (blind) | 1 | c424db8 | PASS with its contracts | 237 mutants, 209 killed, 6 equivalent (constant labels, unreachable branches, anchors that need no escaping), 22 needing contracts, added in a4918a7 |
 | e | 2 | a4918a7 | PASS | all 22 killed by the committed suite |
