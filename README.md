@@ -1,5 +1,7 @@
 # json-pretty-diff
 
+[![Lianes8 Certified](https://lianes8studio.com/certified/lianes8-certified-badge.svg)](https://lianes8studio.com/certified)
+
 <p align="center">
   <a href="https://www.linkedin.com/in/jlianes/" target="_blank" rel="noopener noreferrer"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg" alt="LinkedIn" height="36" width="36" /></a>
   <a href="https://github.com/JaviLianes8/json-pretty-diff" target="_blank" rel="noopener noreferrer"><img src="https://cdn.simpleicons.org/github/181717" alt="GitHub" height="36" width="36" /></a>
