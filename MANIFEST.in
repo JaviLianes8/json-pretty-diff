@@ -1,5 +1,5 @@
 include CHANGELOG.md CONTRIBUTING.md GUIDE.md LICENSE README.md
-include main.py scripts/fetch_upstream.py
+include main.py requirements-dev.txt scripts/check.ps1 scripts/fetch_upstream.py
 recursive-include tests *.py *.json *.html
 prune tests/upstream
 include tests/upstream/MANIFEST.json
