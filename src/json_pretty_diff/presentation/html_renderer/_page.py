@@ -20,7 +20,7 @@ from ._summary import render_summary_panel
 # Control characters other than tab, line feed and carriage return are not allowed in HTML
 # text; those coming from key names or warnings are shown as \uXXXX escapes instead.
 _CONTROLS = {code: f"\\u{code:04x}" for code in [*range(0x20), 0x7F] if code not in (9, 10, 13)}
-_WARNINGS_STYLE =' style="border-color: #f59e0b; background: #fffbeb;"'
+_WARNINGS_STYLE = ' style="border-color: #f59e0b; background: #fffbeb;"'
 
 
 def render_html(
