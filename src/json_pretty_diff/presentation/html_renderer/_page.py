@@ -17,7 +17,10 @@ from ._full_json_script import render_full_json_filter_script
 from ._styles import STYLES
 from ._summary import render_summary_panel
 
-_WARNINGS_STYLE = ' style="border-color: #f59e0b; background: #fffbeb;"'
+# Control characters other than tab, line feed and carriage return are not allowed in HTML
+# text; those coming from key names or warnings are shown as \uXXXX escapes instead.
+_CONTROLS = {code: f"\\u{code:04x}" for code in [*range(0x20), 0x7F] if code not in (9, 10, 13)}
+_WARNINGS_STYLE =' style="border-color: #f59e0b; background: #fffbeb;"'
 
 
 def render_html(
@@ -41,6 +44,9 @@ def render_html(
     >>> "json-pretty-diff v" in page and "Generated on" not in page
     True
     """
+
+    if isinstance(warnings, str) or not all(isinstance(item, str) for item in warnings):
+        raise TypeError("warnings must be a sequence of strings")
 
     if include_timestamp:
         timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -87,7 +93,7 @@ def render_html(
 
     html_parts.append("</body>")
     html_parts.append("</html>")
-    return "\n".join(html_parts)
+    return "\n".join(html_parts).translate(_CONTROLS)
 
 
 def _render_warnings(warnings: Sequence[str], include_styles: bool) -> str:

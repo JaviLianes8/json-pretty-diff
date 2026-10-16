@@ -118,7 +118,9 @@ values of the added and removed keys, and copies of both documents. `render_html
 include_styles=True, include_timestamp=True, warnings=())` returns the page as a string.
 `JsonPrettyDiffCLI().run(argv)` runs the command line and returns 0 or 1; errors, `--help` and
 `--version` raise `SystemExit` with their code, as the script does. `main()` is the `jpd`
-script. Documents nested deeper than Python's recursion limit raise `RecursionError`.
+script. Documents nested deeper than about half of Python's recursion limit (about 500
+levels by default) raise `RecursionError` when the snapshots are copied; keys must be strings
+and `warnings` a sequence of strings, or `TypeError` is raised.
 
 ## Large and repetitive input
 

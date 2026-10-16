@@ -6,7 +6,7 @@ from __future__ import annotations
 def render_full_json_filter_script(table_id: str) -> str:
     """Builds the JavaScript snippet that powers the full JSON filter."""
 
-    return f"""
+    return rf"""
 <script>
 (function() {{
     var filterInput = document.querySelector('[data-json-filter][data-json-target="{table_id}"]');
@@ -34,16 +34,15 @@ def render_full_json_filter_script(table_id: str) -> str:
         if (!query) {{
             return escapeHtml(text);
         }}
-        var lowerText = text.toLowerCase();
-        var lowerQuery = query.toLowerCase();
+        // Matching on the text itself keeps positions right where lowercasing changes length.
+        var pattern = new RegExp(query.replace(/[.*+?^${{}}()|[\]\\]/g, '\\$&'), 'gi');
         var result = '';
         var lastIndex = 0;
-        var index = lowerText.indexOf(lowerQuery);
-        while (index !== -1) {{
-            result += escapeHtml(text.slice(lastIndex, index));
-            result += '<mark class="full-json-highlight">' + escapeHtml(text.slice(index, index + query.length)) + '</mark>';
-            lastIndex = index + query.length;
-            index = lowerText.indexOf(lowerQuery, lastIndex);
+        var found;
+        while ((found = pattern.exec(text)) !== null) {{
+            result += escapeHtml(text.slice(lastIndex, found.index));
+            result += '<mark class="full-json-highlight">' + escapeHtml(found[0]) + '</mark>';
+            lastIndex = found.index + found[0].length;
         }}
         result += escapeHtml(text.slice(lastIndex));
         return result;

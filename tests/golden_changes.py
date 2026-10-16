@@ -9,6 +9,9 @@ from __future__ import annotations
 import re
 
 from json_pretty_diff.presentation.html_renderer._branding import SOCIAL_LINKS
+from json_pretty_diff.presentation.html_renderer._full_json_script import (
+    render_full_json_filter_script,
+)
 
 ICONS_1_1_1 = (
     "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linkedin/linkedin-original.svg",
@@ -33,4 +36,15 @@ def upgrade_1_1_1(report: str, version: str) -> str:
     report = report.replace("&mdash; v1.1.1</p>", f"- v{version}</p>")
     for old, (_, _, new) in zip(ICONS_1_1_1, SOCIAL_LINKS):
         report = report.replace(f'src="{old}"', f'src="{new}"')
+    report = _search(report)
     return _PRE.sub(_rows, report)
+
+
+def _search(report: str) -> str:
+    """Swap in the new highlightText, which matches on the text itself (no lowercasing)."""
+    start, end = "    function highlightText(", "    function ensureMatchVisible("
+    if start not in report:
+        return report
+    new = render_full_json_filter_script("full-json-table")
+    new_body = new[new.index(start) : new.index(end)]
+    return report[: report.index(start)] + new_body + report[report.index(end) :]

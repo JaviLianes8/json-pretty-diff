@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any, List, Tuple
+from typing import Any, List, Set, Tuple
 
 _PLAIN = (str, int, type(None))
 
@@ -20,8 +20,16 @@ def json_equal(left: Any, right: Any) -> bool:
     """
 
     pending: List[Tuple[Any, Any]] = [(left, right)]
+    # Container pairs already expanded: a cyclic structure (only possible from Python, never
+    # from a file) is compared once per pair instead of forever.
+    expanded: Set[Tuple[int, int]] = set()
     while pending:
         a, b = pending.pop()
+        if isinstance(a, (dict, list, tuple)) and isinstance(b, (dict, list, tuple)):
+            pair = (id(a), id(b))
+            if pair in expanded:
+                continue
+            expanded.add(pair)
         if a is b or (type(a) is type(b) and type(a) in _PLAIN):
             if a is not b and a != b:
                 return False

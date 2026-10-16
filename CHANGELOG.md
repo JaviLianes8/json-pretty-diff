@@ -58,6 +58,8 @@ notes.
 - `py.typed`, so type checkers use the package's annotations.
 - `compute_top_level_diff` and `DiffUseCase.execute` accept any mapping and raise `TypeError`
   naming the argument that is not one (1.1.1 failed later with an unrelated error).
+  Keys that are not strings, and `render_html(warnings=...)` items that are not strings,
+  raise `TypeError` too.
 - Package metadata: Production/Stable status, supported Python versions, `Typing :: Typed`, an
   SPDX licence expression, and Source, Issues and Changelog links.
 
@@ -72,6 +74,13 @@ notes.
 - Lone surrogate escapes such as `"\ud800"` are written as `\ud800` instead of crashing.
 - A string holding U+2028, U+2029 or U+0085 stays on one row of the diff blocks and the full
   JSON table; 1.1.1 split it there and dropped the character from the table.
+- The search box of the full JSON table highlights the typed text itself; 1.1.1 could mark the
+  wrong characters when lowercasing changed the length of the text (for example `İ`).
+- Control characters in key names (such as NUL or ESC) appear in the page as `\u0000`-style
+  escapes instead of raw characters HTML does not allow.
+- Paths longer than 200 characters are cut in error messages; UTF-32 input gets its own hint.
+- `compute_top_level_diff` returns for cyclic Python structures (a dict or list that contains
+  itself) instead of raising `RecursionError` from 1.1.1's comparison.
 
 ### Unchanged on purpose
 - `1` and `1.0` compare as equal, and so do numbers with a fraction or an exponent that

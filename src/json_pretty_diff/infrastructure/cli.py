@@ -16,6 +16,7 @@ from ..version import __version__
 from ._io import (
     InputOutputError,
     load_json_object,
+    shown_path,
     write_line,
     write_report,
     write_report_to_stream,
@@ -123,7 +124,8 @@ class JsonPrettyDiffCLI:
                 warnings=warnings,
             )
         except RecursionError as error:
-            self._fail(f"{args.source} or {args.target} is nested too deeply to compare.", error)
+            names = f"{shown_path(args.source)} or {shown_path(args.target)}"
+            self._fail(f"{names} is nested too deeply to compare.", error)
 
         if not args.quiet:
             for message in warnings:
