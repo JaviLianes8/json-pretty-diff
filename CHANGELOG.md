@@ -78,7 +78,7 @@ notes.
   wrong characters when lowercasing changed the length of the text (for example `İ`).
 - Control characters in key names (such as NUL or ESC) appear in the page as `\u0000`-style
   escapes instead of raw characters HTML does not allow.
-- Paths longer than 200 characters are cut in error messages; UTF-32 input gets its own hint.
+- Paths longer than 1,000 characters are cut in error messages; UTF-32 input gets its own hint.
 - `compute_top_level_diff` returns for cyclic Python structures (a dict or list that contains
   itself) instead of raising `RecursionError` from 1.1.1's comparison.
 

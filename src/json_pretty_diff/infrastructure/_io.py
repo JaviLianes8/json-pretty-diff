@@ -12,7 +12,7 @@ from ._decode import decode_json
 _UTF16_MARKS = (b"\xff\xfe", b"\xfe\xff")
 _UTF32_MARKS = (b"\xff\xfe\x00\x00", b"\x00\x00\xfe\xff")
 # Paths quoted in messages are cut to this many characters.
-_PATH_LIMIT = 200
+_PATH_LIMIT = 1000
 
 
 def shown_path(path: object) -> str:

@@ -60,10 +60,12 @@ def test_control_characters_never_reach_the_page_raw() -> None:
 
 
 def test_long_paths_are_cut_in_error_messages(tmp_path: Path, capsys: Capture) -> None:
-    long = tmp_path / ("x" * 150) / ("y" * 150) / "missing.json"
+    long = tmp_path.joinpath(*[c * 200 for c in "vwxyz"], "missing.json")
     assert run_cli(long, FIXTURES / "base.json") == 2
     err = capsys.readouterr().err
-    assert err == f"Error: File not found: {str(long)[:200]}...\n"
+    # Windows may say "not found" or "name too long"; either way the path is cut.
+    assert err.startswith("Error: ") and f"{str(long)[:1000]}..." in err
+    assert str(long)[:1001] not in err and len(err) < 1200
 
 
 def test_utf32_input_gets_its_own_hint(tmp_path: Path, capsys: Capture) -> None:

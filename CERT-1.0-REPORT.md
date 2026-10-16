@@ -24,7 +24,7 @@ Progress:
 | 2 | `__all__` exact, no private imports in docs | PASS |
 | 3 | Docstrings with runnable examples, doctests | PASS: 7 module doctests run by `pytest`; README and GUIDE examples run as tests |
 | 4 | Typed end to end | PASS: `mypy --strict` over src, tests, scripts; `py.typed` shipped |
-| 5 | Typed, documented, bounded errors | PASS: `TypeError` naming the bad argument; CLI errors `Error: ...` exit 2; paths cut at 200 characters, names at 40 |
+| 5 | Typed, documented, bounded errors | PASS: `TypeError` naming the bad argument; CLI errors `Error: ...` exit 2; paths cut at 1,000 characters, names at 40 |
 | 6 | Contract tests of every public name | PASS |
 | 7 | Real ground truth | PASS: RFC 8259 fetched live (`tests/upstream/MANIFEST.json`, sha256 checked); the 1.1.1 reports in `tests/golden/` come from the untouched 1.1.1 code; PyPI 1.1.1 as an oracle |
 | 8 | Real e2e from the wheel | PASS: wheel in fresh venvs, `jpd` by subprocess, upgrade in place from PyPI 1.1.1 |

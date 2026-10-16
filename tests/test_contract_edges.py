@@ -39,11 +39,11 @@ def test_paths_are_cut_in_the_nested_too_deeply_message(
         raise RecursionError
 
     monkeypatch.setattr(DiffUseCase, "execute", deep)
-    # "." segments keep the file the same while the argument grows past the 200-character cut.
-    source = str(FIXTURES) + "/." * 150 + "/base.json"
+    # "." segments keep the file the same while the argument grows past the 1000-character cut.
+    source = str(FIXTURES) + "/." * 600 + "/base.json"
     assert run_cli(source, UPDATE) == 2
     err = capsys.readouterr().err
-    assert err == f"Error: {source[:200]}... or {UPDATE} is nested too deeply to compare.\n"
+    assert err == f"Error: {source[:1000]}... or {UPDATE} is nested too deeply to compare.\n"
 
 
 def test_a_name_of_exactly_forty_characters_is_not_cut() -> None:
@@ -52,9 +52,9 @@ def test_a_name_of_exactly_forty_characters_is_not_cut() -> None:
     assert note == REPEATS + '"' + name + '"'
 
 
-def test_a_path_of_exactly_two_hundred_characters_is_not_cut() -> None:
-    assert shown_path("p" * 200) == "p" * 200
-    assert shown_path("p" * 201) == "p" * 200 + "..."
+def test_a_path_of_exactly_a_thousand_characters_is_not_cut() -> None:
+    assert shown_path("p" * 1000) == "p" * 1000
+    assert shown_path("p" * 1001) == "p" * 1000 + "..."
 
 
 def test_big_endian_utf32_input_gets_the_utf32_hint(tmp_path: Path, capsys: Capture) -> None:
