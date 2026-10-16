@@ -14,7 +14,7 @@ Progress:
 - [x] Author mutation round (item 18): 46 mutants, 41 killed, 5 killed by new contracts
 - [x] Five QA lenses PASS (item 19)
 - [x] Independent scorecard (item 16): 18 items PASS, item 17 pending, minor findings fixed in 992ff41
-- [ ] PR and release check clean (item 17); merge and publish left to the maintainer
+- [x] PR #22 and release check clean (item 17); merge and publish left to the maintainer
 
 ## Scorecard
 
@@ -36,7 +36,7 @@ Progress:
 | 14 | sdist and wheel contents | PASS: 26-module wheel with `py.typed` and LICENSE; sdist with the full runnable test suite, docs, no notes or caches |
 | 15 | Gates each exit 0 | PASS: see Gates |
 | 16 | Independent scorecard | PASS: every item re-verified by running it at 82a0e0a (gates, doctests, build, `twine check`, contents, metadata, 3.9 and 3.14 suites, four extra mutants all killed); minor wording, CHANGELOG and docs findings fixed in 992ff41 |
-| 17 | PR and release check | pending |
+| 17 | PR and release check | PR #22 from `release/1.2.0`, release check clean; merge and publish left to the maintainer |
 | 18 | Contracts bite (mutations) | PASS: see Mutation rounds |
 | 19 | Five independent QA lenses | PASS: see QA lenses |
 
