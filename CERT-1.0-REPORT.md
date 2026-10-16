@@ -69,13 +69,13 @@ keys and non-string warnings; cyclic Python structures compared instead of raisi
 The golden test edits each 1.1.1 report with exactly these page changes (hyphen, icons, diff
 rows, search function) and requires the 1.2.0 report to be byte for byte the result.
 
-## Gates (item 15), final run
+## Gates (item 15), final run at fde6cc6
 
 From a fresh clone, each command on its own: `ruff format --check .`, `ruff check .`,
-`mypy --strict` and `pytest` (doctests included) exit 0. The installed-wheel e2e test
+`mypy --strict` and `pytest` (doctests included: 273 passed, 1 skipped) exit 0. The installed-wheel e2e test
 (`JSON_PRETTY_DIFF_E2E=1`) passes. The suite run from the extracted sdist, with `src` removed so
 it imports the installed wheel, passes on CPython 3.9.25, 3.10.19, 3.11.5, 3.12.12, 3.13.2,
-3.14.2 and 3.14.2 free-threaded (one skip each: the opt-in e2e test).
+3.14.2 and 3.14.2 free-threaded: 266 passed on each, one skip each (the opt-in e2e test).
 
 ## Bounded line matching (item 9)
 
