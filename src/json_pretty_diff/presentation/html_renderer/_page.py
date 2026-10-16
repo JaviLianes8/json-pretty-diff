@@ -45,7 +45,7 @@ def render_html(
     True
     """
 
-    if isinstance(warnings, str) or not all(isinstance(item, str) for item in warnings):
+    if isinstance(warnings, (str, type(None))) or not all(isinstance(w, str) for w in warnings):
         raise TypeError("warnings must be a sequence of strings")
 
     if include_timestamp:

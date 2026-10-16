@@ -84,7 +84,7 @@ def test_keys_must_be_strings(source: Any, target: Any, message: str) -> None:
         compute_top_level_diff(source, target)
 
 
-@pytest.mark.parametrize("warnings", ["abc", [1], ["ok", None]])
+@pytest.mark.parametrize("warnings", ["abc", [1], ["ok", None], None])
 def test_warnings_must_be_strings(warnings: Any) -> None:
     with pytest.raises(TypeError, match=r"^warnings must be a sequence of strings$"):
         render_html(compute_top_level_diff({}, {}), warnings=warnings)
