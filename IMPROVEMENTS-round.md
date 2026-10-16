@@ -12,13 +12,13 @@ Progress:
 - [x] Gates: ruff format, ruff check, mypy --strict, pytest on 3.8 to 3.14
 - [x] Mutation run
 - [x] Independent review findings fixed
-- [x] Pull request opened (#21), guard clean
+- [x] Pull request opened (#21), checks clean
 
 Every change keeps the public surface: the `jpd` script and its options (`-o/--output`,
 `--open`, `-q/--quiet`, `--no-style`, `--version`), the exit codes 0, 1 and 2, the HTML
 report layout, `JsonPrettyDiffCLI`, `DiffUseCase`, `compute_top_level_diff`, `DiffResult`
 and `render_html`. Fixes and additions only; anything that would change what existing users
-see for input that works today is listed under Proposals for the owner.
+see for input that works today is listed under Proposals.
 
 ## Starting point
 
@@ -93,7 +93,7 @@ on CPython 3.13, 3.9 and 3.8 on Windows:
   untouched 1.1.1 code (with styles, without styles, no differences), only the generation
   time masked, and the branch renders them identically.
 - Line and branch coverage of the package is 99% after the review fixes; what is left is
-  two unreachable guards in the owner's truncation panel code.
+  two unreachable guards in the truncation panel code.
 - RFC 8259 (section 3 value grammar, section 4 unique names, section 8.1 UTF-8 and the byte
   order mark, the section 13 examples cut out of the fetched text) is read in
   `tests/test_sources.py`.
@@ -108,8 +108,8 @@ on CPython 3.13, 3.9 and 3.8 on Windows:
 
 ## Behaviour changes to confirm
 
-These fixes change the result for input that ran without an error in 1.1.1, so the owner
-should confirm them before a release. Each is small to revert: one branch in
+These fixes change the result for input that ran without an error in 1.1.1, so they
+should be confirmed before a release. Each is small to revert: one branch in
 `domain/_equality.py` for the first two, one call in `infrastructure/_io.py` for the third.
 
 - `true` against `1` (or `false` against `0`) now counts as a change: exit 0 becomes exit 1
@@ -146,7 +146,7 @@ the intended fixes) and attacked the fixes. Fixed, each with a test:
 Left as written: the README example paths (`fixtures/base.json`) are an illustration of the
 user's own files, not a claim about the repository.
 
-## Proposals for the owner
+## Proposals
 
 These would change what existing users see for input that works today, or are design
 choices, so they are not in the code. Each is a suggestion, ranked by how often it should

@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import json
-from difflib import unified_diff
 from typing import Any, Dict, Iterable, List, Tuple
 
 from ...domain.models import DiffResult
+from ._matching import unified_lines
 
 MISSING = object()
 
@@ -38,18 +38,26 @@ def prepare_serialized_for_diff(value: Any) -> Tuple[str, bool, str]:
     return truncated, was_truncated, serialized
 
 
+def split_lines(text: str, keepends: bool = False) -> List[str]:
+    """Splits text at ``\\n`` only, like ``str.splitlines`` otherwise.
+
+    Indented JSON breaks lines with ``\\n`` alone; ``splitlines`` would also split inside
+    strings holding U+2028, U+2029 or U+0085, which ``json.dumps`` leaves unescaped.
+    """
+
+    parts = text.split("\n")
+    last = parts.pop()
+    if keepends:
+        parts = [part + "\n" for part in parts]
+    if last:
+        parts.append(last)
+    return parts
+
+
 def diff_lines(old: Iterable[str], new: Iterable[str]) -> List[str]:
     """Computes a unified diff for the provided iterables of lines."""
 
-    return list(
-        unified_diff(
-            list(old),
-            list(new),
-            fromfile="old",
-            tofile="new",
-            lineterm="",
-        )
-    )
+    return list(unified_lines(list(old), list(new)))
 
 
 def build_git_entries(diff: DiffResult, anchors: Dict[str, str]) -> List[Dict[str, Any]]:
@@ -99,5 +107,6 @@ __all__ = [
     "diff_lines",
     "prepare_serialized_for_diff",
     "serialize_for_diff",
+    "split_lines",
     "truncate_text",
 ]

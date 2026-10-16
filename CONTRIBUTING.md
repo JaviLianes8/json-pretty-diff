@@ -22,11 +22,14 @@ Run before every commit:
 ./scripts/check.ps1
 ```
 
-It runs `ruff format --check`, `ruff check`, `mypy --strict` and `pytest`. The installed
-wheel test is slower and opt-in: set `JSON_PRETTY_DIFF_E2E=1` before `pytest`.
+It runs `ruff format --check`, `ruff check`, `mypy --strict` and `pytest` (which also runs
+the examples in the docstrings). The installed wheel test is slower and opt-in: set
+`JSON_PRETTY_DIFF_E2E=1` before `pytest`.
 
 ## Compatibility
 
-The command-line options, the exit codes and the HTML report are public. The report is
-pinned byte for byte by `tests/golden/` (only the generation time is masked); a change to
-the report is a change of the format and needs its own discussion first.
+The command-line options, the exit codes, the names in `json_pretty_diff.__all__` and the HTML
+report are public. `tests/golden/` holds reports rendered by 1.1.1; `tests/golden_changes.py`
+spells out, as an edit, every way the current report differs from them, and the tests check
+that nothing else does (only the generation time is masked). A change to the report is a
+change of the format and needs its own discussion first.

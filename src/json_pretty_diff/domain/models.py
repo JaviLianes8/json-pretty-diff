@@ -6,7 +6,19 @@ from typing import Any, Dict, List
 
 @dataclass(frozen=True)
 class DiffResult:
-    """Represents the comparison outcome between two JSON documents."""
+    """Represents the comparison outcome between two JSON documents.
+
+    ``added`` and ``removed`` are sorted key lists, ``changed`` maps each key whose value
+    differs to ``{"old": ..., "new": ...}``, ``added_values`` and ``removed_values`` hold the
+    values of the added and removed keys, and the two snapshots are copies of the compared
+    objects.
+
+    >>> from json_pretty_diff import DiffResult
+    >>> DiffResult().has_differences
+    False
+    >>> DiffResult(added=["a"], added_values={"a": 1}).has_differences
+    True
+    """
 
     added: List[str] = field(default_factory=list)
     removed: List[str] = field(default_factory=list)

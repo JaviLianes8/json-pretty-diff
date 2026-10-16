@@ -45,13 +45,30 @@ def test_built_wheel_installs_and_runs(tmp_path: Path) -> None:
     sdist = next(dist.glob("*.tar.gz"))
 
     names = zipfile.ZipFile(wheel).namelist()
-    for module in ("py.typed", "infrastructure/_io.py", "domain/_equality.py"):
+    for module in (
+        "py.typed",
+        "infrastructure/_io.py",
+        "infrastructure/_decode.py",
+        "infrastructure/_output.py",
+        "domain/_equality.py",
+        "presentation/html_renderer/_matching.py",
+        "presentation/html_renderer/_styles.py",
+    ):
         assert f"json_pretty_diff/{module}" in names
     assert not [name for name in names if name.startswith("tests/")]
     with tarfile.open(sdist) as archive:
         members = archive.getnames()
     assert not [name for name in members if "tests/upstream/rfc" in name]
-    assert not [name for name in members if name.endswith("IMPROVEMENTS-round.md")]
+    for needed in (
+        "tests/conftest.py",
+        "tests/golden/report-1.1.1.html",
+        "GUIDE.md",
+        "CHANGELOG.md",
+    ):
+        assert [name for name in members if name.endswith(needed)], needed
+    assert not [name for name in members if "__pycache__" in name or name.endswith(".pyc")]
+    for notes in ("IMPROVEMENTS-round.md", "CERT-1.0-REPORT.md"):
+        assert not [name for name in members if name.endswith(notes)]
 
     env_dir = tmp_path / "venv"
     venv.create(env_dir, with_pip=True)

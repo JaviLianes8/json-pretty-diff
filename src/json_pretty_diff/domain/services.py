@@ -3,14 +3,33 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Dict
+from typing import Any, Dict, Mapping
 
 from ._equality import json_equal
 from .models import DiffResult
 
 
-def compute_top_level_diff(source: Dict[str, Any], target: Dict[str, Any]) -> DiffResult:
-    """Computes the top-level diff between two JSON objects."""
+def compute_top_level_diff(source: Mapping[str, Any], target: Mapping[str, Any]) -> DiffResult:
+    """Computes the top-level diff between two JSON objects.
+
+    Keys are compared at the top level only; a key counts as changed when its two values are
+    different JSON values at any depth. ``true`` differs from ``1``, ``NaN`` equals ``NaN``,
+    and ``1`` equals ``1.0``. Both arguments must be mappings with string keys (a
+    ``TypeError`` says which is not). Copying the snapshots takes about two stack frames per
+    level, so values nested deeper than about half the interpreter's recursion limit raise
+    ``RecursionError``.
+
+    >>> from json_pretty_diff import compute_top_level_diff
+    >>> diff = compute_top_level_diff({"a": 1, "b": True, "c": 1}, {"a": 1.0, "b": 1, "d": 2})
+    >>> diff.added, diff.removed, diff.changed
+    (['d'], ['c'], {'b': {'old': True, 'new': 1}})
+    """
+
+    for name, value in (("source", source), ("target", target)):
+        if not isinstance(value, Mapping):
+            raise TypeError(f"{name} must be a mapping, not {type(value).__name__}")
+        if not all(isinstance(key, str) for key in value):
+            raise TypeError(f"{name} keys must be strings, as JSON object names are")
 
     added_keys = sorted(set(target) - set(source))
     removed_keys = sorted(set(source) - set(target))
@@ -30,6 +49,6 @@ def compute_top_level_diff(source: Dict[str, Any], target: Dict[str, Any]) -> Di
         changed=changed,
         added_values=added_values,
         removed_values=removed_values,
-        source_snapshot=deepcopy(source),
-        target_snapshot=deepcopy(target),
+        source_snapshot=deepcopy(dict(source)),
+        target_snapshot=deepcopy(dict(target)),
     )

@@ -7,7 +7,7 @@ import sys
 import webbrowser
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Dict, Sequence
+from typing import Any, Callable, Dict, List, NoReturn, Sequence
 
 from ..application.use_cases import DiffUseCase
 from ..domain.models import DiffResult
@@ -16,14 +16,27 @@ from ..version import __version__
 from ._io import (
     InputOutputError,
     load_json_object,
+    shown_path,
     write_line,
     write_report,
     write_report_to_stream,
 )
+from ._output import to_stderr, to_stdout
 
 
 class JsonPrettyDiffCLI:
-    """Facade that exposes the command-line entry point."""
+    """Facade that exposes the command-line entry point.
+
+    ``run`` returns the exit code (0: no differences, 1: differences) and raises
+    ``SystemExit`` for ``--help``, ``--version`` and errors (code 2), as the script does.
+
+    >>> try:
+    ...     JsonPrettyDiffCLI().run(["--version"])
+    ... except SystemExit as stop:
+    ...     print("exit", stop.code)
+    jpd 1...
+    exit 0
+    """
 
     def __init__(self) -> None:
         """Initializes the CLI parser."""
@@ -73,6 +86,11 @@ class JsonPrettyDiffCLI:
             action="store_true",
             help="Generate HTML without CSS styles (lighter output).",
         )
+        self._parser.add_argument(
+            "--no-timestamp",
+            action="store_true",
+            help="Leave the generation time out, so the same inputs give the same report.",
+        )
         self._parser.epilog = "When `--output` is omitted, redirect the standard output to a file with `>` if you want to keep the report."
         self._use_case = DiffUseCase()
 
@@ -83,56 +101,66 @@ class JsonPrettyDiffCLI:
         -------
         int
             Exit status code: ``0`` when no differences are detected, ``1`` when
-            changes exist, and ``2`` when a recoverable error is reported.
+            changes exist. Errors print ``Error: ...`` and raise ``SystemExit(2)``.
         """
 
         args = self._parser.parse_args(argv)
 
         if args.open and not args.output:
-            self._emit_error("--open requires -o/--output to be specified.")
-            raise SystemExit(2)
+            self._fail("--open requires -o/--output to be specified.")
 
-        source = self._load_json(Path(args.source))
-        target = self._load_json(Path(args.target))
+        warnings: List[str] = []
+        source = self._load_json(Path(args.source), warnings)
+        target = self._load_json(Path(args.target), warnings)
+        # The same file given twice warns once.
+        warnings = list(dict.fromkeys(warnings))
 
         try:
             diff = self._use_case.execute(source, target)
-            html_report = render_html(diff, include_styles=not args.no_style)
+            html_report = render_html(
+                diff,
+                include_styles=not args.no_style,
+                include_timestamp=not args.no_timestamp,
+                warnings=warnings,
+            )
         except RecursionError as error:
-            self._emit_error(f"{args.source} or {args.target} is nested too deeply to compare.")
-            raise SystemExit(2) from error
+            names = f"{shown_path(args.source)} or {shown_path(args.target)}"
+            self._fail(f"{names} is nested too deeply to compare.", error)
+
+        if not args.quiet:
+            for message in warnings:
+                to_stderr("Warning", message)
 
         if args.output:
             output_path = Path(args.output)
-            self._write_output(output_path, html_report)
-            if not args.quiet:
-                write_line(f"Report saved to {output_path} ({self._summarize(diff)})\n")
+            self._guard(lambda: write_report(output_path, html_report))
+            # Without a standard output (pythonw, a closed descriptor) the status line is skipped.
+            if not args.quiet and sys.stdout is not None:
+                line = f"Report saved to {output_path} ({self._summarize(diff)})\n"
+                self._guard(lambda: to_stdout(lambda: write_line(line)))
             if args.open:
                 webbrowser.open(output_path.resolve().as_uri())
-        else:
-            if not args.quiet:
-                ending = "" if html_report.endswith("\n") else "\n"
-                write_report_to_stream(html_report + ending)
+        elif not args.quiet:
+            ending = "" if html_report.endswith("\n") else "\n"
+            self._guard(lambda: to_stdout(lambda: write_report_to_stream(html_report + ending)))
 
         return 1 if diff.has_differences else 0
 
-    def _load_json(self, path: Path) -> Dict[str, Any]:
+    def _load_json(self, path: Path, warnings: List[str]) -> Dict[str, Any]:
         """Loads a JSON file from disk ensuring it is an object."""
 
         try:
-            return load_json_object(path)
+            return load_json_object(path, warnings)
         except InputOutputError as error:
-            self._emit_error(str(error))
-            raise SystemExit(2) from error
+            self._fail(str(error), error)
 
-    def _write_output(self, path: Path, html_report: str) -> None:
-        """Persists the HTML report to the specified path."""
+    def _guard(self, action: Callable[[], object]) -> None:
+        """Runs an output step; a failure becomes ``Error: ...`` and exit code 2."""
 
         try:
-            write_report(path, html_report)
+            action()
         except InputOutputError as error:
-            self._emit_error(str(error))
-            raise SystemExit(2) from error
+            self._fail(str(error), error)
 
     @staticmethod
     def _summarize(diff: DiffResult) -> str:
@@ -143,7 +171,8 @@ class JsonPrettyDiffCLI:
         return f"{len(diff.added)} added, {len(diff.removed)} removed, {len(diff.changed)} changed"
 
     @staticmethod
-    def _emit_error(message: str) -> None:
-        """Writes an error message to stderr."""
+    def _fail(message: str, cause: BaseException | None = None) -> NoReturn:
+        """Writes ``Error: message`` to stderr and exits with code 2."""
 
-        sys.stderr.write(f"Error: {message}\n")
+        to_stderr("Error", message)
+        raise SystemExit(2) from cause
