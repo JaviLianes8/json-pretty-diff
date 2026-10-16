@@ -6,8 +6,9 @@ import base64
 import html
 from typing import Iterable, Tuple
 
-# Small drawings of the three marks, embedded so the report shows them offline and opening
-# it contacts nobody (1.1.1 loaded them from two CDNs).
+# Small drawings of the three marks made for this report (the marks belong to their owners),
+# embedded so the report shows them offline and opening it contacts nobody (1.1.1 loaded
+# them from two CDNs).
 _LINKEDIN = (
     '<rect width="32" height="32" rx="6" fill="#0a66c2"/>'
     '<rect x="7" y="13" width="4" height="12" fill="#fff"/>'

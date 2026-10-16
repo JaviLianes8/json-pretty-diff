@@ -112,8 +112,7 @@ assert "<h2>Warnings</h2>" in page and "Generated on" not in page
 
 `compute_top_level_diff(source, target)` takes two mappings (anything else raises `TypeError`)
 and returns a `DiffResult`, a frozen dataclass whose lists and dicts can still be changed in
-place, with sorted `added` and
-`removed` key lists, `changed` mapping each changed key to its `old` and `new` value, the
+place, with sorted `added` and `removed` key lists, `changed` mapping each changed key to its `old` and `new` value, the
 values of the added and removed keys, and copies of both documents. `render_html(diff, *,
 include_styles=True, include_timestamp=True, warnings=())` returns the page as a string.
 `JsonPrettyDiffCLI().run(argv)` runs the command line and returns 0 or 1; errors, `--help` and
@@ -125,9 +124,9 @@ and `warnings` a sequence of strings, or `TypeError` is raised.
 ## Large and repetitive input
 
 Line matching uses Python's `difflib`, whose running time can grow with the square of the
-input on some shapes (long arrays with repeated or shuffled values). `jpd` counts the work and,
-past a fixed budget (10 million steps of its inner loop, a few seconds at most), shows the part between the lines both sides share at the
-start and at the end as one replacement. Below the budget, the diff is exactly `difflib`'s.
+input on some shapes (long arrays of repeated values). `jpd` counts the work and, past a fixed
+budget (10 million steps of its inner loop, a few seconds at most), shows the part between the
+lines both sides share at the start and at the end as one replacement. Below the budget, the diff is exactly `difflib`'s.
 
 ## Upgrading from 1.1.1
 

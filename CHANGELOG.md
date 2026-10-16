@@ -60,8 +60,10 @@ notes.
   naming the argument that is not one (1.1.1 failed later with an unrelated error).
   Keys that are not strings, and `render_html(warnings=...)` items that are not strings,
   raise `TypeError` too.
+- The sdist carries the complete test suite, GUIDE, CHANGELOG and CONTRIBUTING.
 - Package metadata: Production/Stable status, supported Python versions, `Typing :: Typed`, an
-  SPDX licence expression, and Source, Issues and Changelog links.
+  SPDX licence expression, and Source, Issues and Changelog links; the Documentation link points
+  to GUIDE.md and the former Bug Tracker link is now called Issues.
 
 ### Fixed
 - The package imports and runs on Python 3.9, as `requires-python` declares.

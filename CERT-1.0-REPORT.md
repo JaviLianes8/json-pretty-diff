@@ -5,7 +5,7 @@ The 1.0.0 certification bar (`CERT-1.0.md`, 19 items) applied to the 1.2.0 relea
 Progress:
 - [x] Branch `release/1.2.0` created from `main` (1.1.1 plus the merged improvement round)
 - [x] Browser check of the diff rows in headless Chrome (blank rows confirmed, then fixed)
-- [x] Owner decisions implemented: warnings, header hyphen, inline icons, `--no-timestamp`,
+- [x] Maintainer decisions implemented: warnings, header hyphen, inline icons, `--no-timestamp`,
       diff rows, quiet broken pipe, public names at the top level
 - [x] Tests: contracts, golden edit from 1.1.1, warnings, pipes, fuzz, bounded matching (items 6, 9)
 - [x] Docs: README additions, GUIDE, CHANGELOG 1.2.0 (items 11, 12)
@@ -14,7 +14,7 @@ Progress:
 - [x] Author mutation round (item 18): 46 mutants, 41 killed, 5 killed by new contracts
 - [x] Five QA lenses PASS (item 19)
 - [ ] Independent scorecard (item 16)
-- [ ] PR and trace guard CLEAN (item 17); merge and publish left to the maintainer
+- [ ] PR and release check clean (item 17); merge and publish left to the maintainer
 
 ## Scorecard
 
@@ -36,20 +36,20 @@ Progress:
 | 14 | sdist and wheel contents | PASS: 26-module wheel with `py.typed` and LICENSE; sdist with the full runnable test suite, docs, no notes or caches |
 | 15 | Gates each exit 0 | PASS: see Gates |
 | 16 | Independent scorecard | pending |
-| 17 | PR and trace guard | pending |
+| 17 | PR and release check | pending |
 | 18 | Contracts bite (mutations) | PASS: see Mutation rounds |
 | 19 | Five independent QA lenses | PASS: see QA lenses |
 
 ## Starting point
 
-PyPI 1.1.1 and `main` after the improvement round (`IMPROVEMENTS-round.md`). The owner chose
+PyPI 1.1.1 and `main` after the improvement round (`IMPROVEMENTS-round.md`). The maintainer chose
 the 1.2.0 behaviour: keep the three behaviour changes of the round (`true` against `1` differs,
 `NaN` equals itself, UTF-8 on stdout); `1` and `1.0` stay equal; NaN and Infinity accepted with
 a warning; repeated names reported; blank rows checked in a browser and fixed; hyphen in the
 header; icons inside the page; an option to leave the time out; long integers, deep nesting
 and double precision as they are; a closed output pipe ends quietly.
 
-Headless Chrome (playwright-core driving Chrome 155) measured the 1.1.1 report: an 18 pixel
+Headless Chrome 155 measured the 1.1.1 report: an 18 pixel
 empty row between every pair of diff rows with styles, and an extra row inside multi-line
 values without styles; the three header icons failed to load offline. The same measurement
 on 1.2.0: no gap between rows in either mode, three `data:` images, no network request.
